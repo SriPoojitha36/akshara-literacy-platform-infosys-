@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Akshara | Task 2 Database Design</title><link rel="stylesheet" href="styles.css" />
+  <style>.db-page{max-width:1150px;margin:auto;padding:55px 28px}.db-page h1{font-family:Fraunces,serif;font-size:46px;margin:0}.db-page>p{color:var(--muted);max-width:700px;line-height:1.6}.db-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:32px}.entity{background:white;border:1px solid var(--line);border-radius:12px;overflow:hidden}.entity h2{font-size:16px;background:#1e5149;color:white;padding:14px 16px;margin:0}.entity ul{list-style:none;padding:8px 16px;margin:0}.entity li{padding:8px 0;border-bottom:1px solid #edf0eb;font-size:13px;color:#50635d}.entity li:last-child{border:0}.pk{color:#267059;font-weight:700}.fk{color:#b05d43;font-weight:700}.flow{margin-top:35px;padding:22px;background:#edf7df;border-radius:12px;line-height:2;font-family:monospace;color:#234d44}@media(max-width:650px){.db-page h1{font-size:34px}}</style>
+</head>
+<body><main class="db-page"><a class="brand" style="color:#173a35" href="/"> <span>अ</span> akshara</a><p class="eyebrow" style="margin-top:45px">TASK 2 · DATABASE DESIGN</p><h1>Intelligent literacy data model</h1><p>All tables below are implemented in SQLite by the Flask backend. Primary keys are marked <span class="pk">PK</span>; foreign keys are marked <span class="fk">FK</span>.</p>
+<section class="db-grid">
+<article class="entity"><h2>Learner</h2><ul><li><span class="pk">PK</span> id</li><li>name, age, email</li><li>password_hash</li><li>language, proficiency, goal</li><li>assessment, streak, XP</li></ul></article>
+<article class="entity"><h2>Language</h2><ul><li><span class="pk">PK</span> id</li><li>name</li><li>code</li></ul></article>
+<article class="entity"><h2>Learner Language</h2><ul><li><span class="fk">FK</span> learner_id</li><li><span class="fk">FK</span> language_id</li><li>is_preferred</li></ul></article>
+<article class="entity"><h2>Course</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> language_id</li><li>title, description</li><li>proficiency_level</li></ul></article>
+<article class="entity"><h2>Topic</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> course_id</li><li>title, sequence_no</li></ul></article>
+<article class="entity"><h2>Lesson</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> topic_id</li><li>title, content</li><li>estimated_minutes</li></ul></article>
+<article class="entity"><h2>Assessment</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> course_id</li><li>title, assessment_type</li></ul></article>
+<article class="entity"><h2>Question</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> assessment_id</li><li>question_text</li><li>question_type, sequence_no</li></ul></article>
+<article class="entity"><h2>Answer</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> question_id</li><li>answer_text</li><li>is_correct</li></ul></article>
+<article class="entity"><h2>Assessment Result</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> learner_id, assessment_id</li><li>score</li><li>recommended_level</li></ul></article>
+<article class="entity"><h2>Learning Progress</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> learner_id, lesson_id</li><li>completion_percent</li><li>last_accessed_at</li></ul></article>
+<article class="entity"><h2>Recommendation</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> learner_id</li><li>recommendation_type</li><li>content, is_seen</li></ul></article>
+<article class="entity"><h2>Voice Assessment</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> learner_id</li><li>target_text, spoken_text</li><li>match_score</li></ul></article>
+<article class="entity"><h2>Learner Skill Score</h2><ul><li><span class="pk">PK</span> learner_id, skill</li><li>mastery_score</li><li>attempts, updated_at</li></ul></article>
+<article class="entity"><h2>Learning Event</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> learner_id</li><li>event_type, skill, score</li><li>duration_seconds, created_at</li></ul></article>
+<article class="entity"><h2>Personalized Lesson</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> learner_id</li><li>skill, title, payload</li><li>status, completed_at</li></ul></article>
+<article class="entity"><h2>Learner Achievement</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> learner_id</li><li>badge_key, badge_name</li><li>unlocked_at</li></ul></article>
+<article class="entity"><h2>Social Account</h2><ul><li><span class="pk">PK</span> id</li><li><span class="fk">FK</span> learner_id</li><li>provider</li><li>provider_user_id</li></ul></article>
+<article class="entity"><h2>Password Reset</h2><ul><li><span class="pk">PK</span> id</li><li>email, token</li><li>expires_at, created_at</li></ul></article>
+</section><div class="flow">Language → Course → Topic → Lesson<br>Course → Assessment → Question → Answer<br>Learner → Assessment Result / Learning Progress / Voice Assessment / Recommendation<br>Learner → Skill Score / Learning Event / Personalized Lesson / Achievement / Social Account</div></main></body></html>

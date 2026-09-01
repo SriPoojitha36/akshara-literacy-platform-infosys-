@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Akshara | Learning Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="form-panel">
+        <section id="publicHomeView" class="public-home-view" aria-labelledby="publicHomeTitle">
+          <a class="public-brand" href="#" id="brandHome" aria-label="Akshara home"><span>अ</span> akshara</a>
+          <p class="eyebrow">WELCOME TO AKSHARA</p>
+          <h2 id="publicHomeTitle">Learn at your own pace.</h2>
+          <p class="public-home-lead">A friendly literacy learning space for new learners. Listen, look, practise, and build confidence one small step at a time.</p>
+          <div class="home-action-row">
+            <button id="welcomeGetStarted" class="primary" type="button">Get started <span>→</span></button>
+            <button id="welcomeSignIn" class="home-secondary" type="button">I already have an account</button>
+          </div>
+          <div class="home-steps" aria-label="How Akshara works">
+            <article><span>1</span><div><h3>Tell us your goal</h3><p>Choose the language and skill you want to improve.</p></div></article>
+            <article><span>2</span><div><h3>Take a short starting assessment</h3><p>It helps us choose a comfortable learning path for you.</p></div></article>
+            <article><span>3</span><div><h3>Learn with guidance</h3><p>Use pictures, sound, words, and small activities.</p></div></article>
+          </div>
+          <p class="home-note">No previous reading experience is needed.</p>
+        </section>
+
+        <div id="authView" class="hidden">
+          <div class="form-heading">
+            <p class="eyebrow">WELCOME</p>
+            <h2 id="formTitle">Start your learning journey</h2>
+            <p id="formSubtitle">Create your learner profile in just a few steps.</p>
+          </div>
+
+          <div class="tabs" role="tablist">
+            <button class="tab active" data-mode="register" role="tab">Create account</button>
+            <button class="tab" data-mode="login" role="tab">Sign in</button>
+          </div>
+
+          <form id="registerForm" novalidate>
+            <div class="field-grid">
+              <label>Full name<input name="name" type="text" placeholder="Full name" required /></label>
+              <label>Age<input name="age" type="number" min="5" max="120" placeholder="Age" required /></label>
+            </div>
+            <label>Email address<input name="email" type="email" placeholder="Email address" required /></label>
+            <label>Create password<input name="password" type="password" minlength="6" placeholder="Password" required /></label>
+            <label>Preferred language
+              <select name="language" required><option value="">Select language</option><option>English</option><option>Hindi</option><option>Telugu</option><option>Tamil</option><option>Kannada</option><option>Malayalam</option><option>Bengali</option><option>Marathi</option></select>
+            </label>
+            <label class="check"><input type="checkbox" required /><span>I agree to use this platform respectfully.</span></label>
+            <p class="error" id="registerError" aria-live="polite"></p>
+            <button class="primary" type="submit">Create my profile <span>→</span></button>
+            <div class="social-divider"><span>or continue with</span></div>
+            <div class="social-buttons"><button type="button" class="social" data-provider="Google"><b>G</b> Google</button><button type="button" class="social" data-provider="Facebook"><b>f</b> Facebook</button><button type="button" class="social" data-provider="Apple"><b>●</b> Apple</button></div>
+            <p class="social-message" id="socialMessage" aria-live="polite"></p>
+          </form>
+
+          <form id="loginForm" class="hidden" novalidate>
+            <label>Email address<input name="email" type="email" placeholder="Email address" required /></label>
+            <label>
+              <span class="field-header">
+                <span>Password</span>
+                <button type="button" class="forgot-link" id="forgotPasswordLink">Forgot password?</button>
+              </span>
+              <input name="password" type="password" placeholder="Password" required />
+            </label>
+            <p class="error" id="loginError" aria-live="polite"></p>
+            <button class="primary" type="submit">Sign in <span>→</span></button>
+            <div class="social-divider"><span>or sign in with</span></div>
+            <div class="social-buttons"><button type="button" class="social" data-provider="Google"><b>G</b> Google</button><button type="button" class="social" data-provider="Facebook"><b>f</b> Facebook</button><button type="button" class="social" data-provider="Apple"><b>●</b> Apple</button></div>
+            <p class="social-message" id="socialMessageLogin" aria-live="polite"></p>
+            <p class="helper">New to Akshara? <button type="button" class="text-button" id="createLink">Create an account</button></p>
+          </form>
+
+          <form id="forgotForm" class="hidden" novalidate>
+            <label>Email address<input name="email" type="email" placeholder="Email address" required /></label>
+            <p class="error" id="forgotError" aria-live="polite"></p>
+            <p class="success" id="forgotSuccess" aria-live="polite"></p>
+            <div id="resetLinkBanner" class="hidden" style="background:#eef7f3; border:1px solid #bce2d1; border-radius:10px; padding:12px; font-size:13px; margin-top:8px;">
+              <p style="margin:0 0 6px; font-weight:700; color:#184c3c;">🔑 Simulation Link (Testing):</p>
+              <a id="demoResetLink" href="#" style="color:#287257; word-break:break-all; font-weight:600;">Click here to set new password</a>
+            </div>
+            <button class="primary" type="submit">Send reset link <span>→</span></button>
+            <p class="helper">Remembered your password? <button type="button" class="text-button" id="backToLoginLink">Back to sign in</button></p>
+          </form>
+
+          <form id="resetForm" class="hidden" novalidate>
+            <input type="hidden" name="email" id="resetEmailInput" />
+            <input type="hidden" name="token" id="resetTokenInput" />
+            <label>New password<input name="new_password" type="password" minlength="6" placeholder="New password" required /></label>
+            <p class="error" id="resetError" aria-live="polite"></p>
+            <p class="success" id="resetSuccess" aria-live="polite"></p>
+            <button class="primary" type="submit">Update password <span>→</span></button>
+            <p class="helper">Back to <button type="button" class="text-button" id="backToLoginFromReset">Sign in</button></p>
+          </form>
+        </div>
+
+        <section id="assessmentView" class="hidden" aria-live="polite">
+          <div class="form-heading">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+              <div>
+                <p class="eyebrow">YOUR STARTING POINT</p>
+                <h2>Let’s build your learning path</h2>
+              </div>
+              <button id="assessmentLogout" type="button" class="text-button" style="font-size: 13px; margin-top: 4px;">Sign in with different account</button>
+            </div>
+            <p>A few quick questions help us understand your skills and prepare lessons that feel right for you.</p>
+          </div>
+          <div class="assessment-progress"><span id="assessmentStep">1</span> of <span id="assessmentTotal">9</span> <div><i id="progressFill"></i></div></div>
+          <div id="questionCard" class="question-card"></div>
+          <p id="assessmentError" class="error" aria-live="polite"></p>
+          <div class="assessment-actions"><button id="backQuestion" class="secondary" type="button">Back</button><button id="nextQuestion" class="primary" type="button">Continue <span>→</span></button></div>
+        </section>
+
+        <section id="resultView" class="hidden result-view">
+          <div class="result-icon">✦</div><p class="eyebrow">YOUR PERSONAL START</p><h2>You’re ready to begin!</h2>
+          <p id="resultCopy"></p><div class="result-level" id="resultLevel"></div>
+          <button id="continueProfile" class="primary" type="button">Go to my learning home <span>→</span></button>
+        </section>
+
+        <section id="dashboardView" class="hidden dashboard-view">
+          <!-- Top Executive Header -->
+          <div class="dash-header">
+            <div class="user-meta">
+              <div class="user-avatar-badge" id="dashAvatar">P</div>
+              <div>
+                <div class="online-indicator"><span></span> ACTIVE LEARNER • REGIONAL PLATFORM</div>
+                <h2>Hello, <span id="dashboardName">Priya</span>! 👋</h2>
+                <p class="subtitle">Your personal Akshara learning home</p>
+              </div>
+            </div>
+            <div class="header-actions">
+              <div class="language-pair" aria-label="Language preferences">
+                <label><span>Learning language</span><select id="dashLangSelect" class="btn-executive lang-select-pro" title="Change preferred learning language">
+                  <option value="Hindi">🌐 Hindi</option>
+                  <option value="English">🌐 English</option>
+                  <option value="Telugu">🌐 Telugu</option>
+                  <option value="Tamil">🌐 Tamil</option>
+                  <option value="Kannada">🌐 Kannada</option>
+                  <option value="Malayalam">🌐 Malayalam</option>
+                  <option value="Bengali">🌐 Bengali</option>
+                  <option value="Marathi">🌐 Marathi</option>
+                </select></label>
+                <label><span>Interface language</span><select id="interfaceLangSelect" class="btn-executive" title="Change interface language">
+                  <option value="English">🌐 English</option>
+                  <option value="Hindi">🌐 हिन्दी</option>
+                  <option value="Telugu">🌐 తెలుగు</option>
+                  <option value="Tamil">🌐 தமிழ்</option>
+                  <option value="Kannada">🌐 ಕನ್ನಡ</option>
+                </select></label>
+              </div>
+              <button id="globalRefreshBtn" type="button" class="btn-executive refresh-btn" title="Refresh session questions">✨ Shuffle Questions</button>
+              <button id="viewCertBtn" type="button" class="btn-executive cert-btn" title="Download literacy certificate">📜 Certificate</button>
+              <button id="themeToggleBtn" type="button" class="btn-executive theme-btn" title="Toggle dark/light mode">🌙 Theme</button>
+              <button id="dashboardProfile" type="button" class="btn-executive">⚙️ My profile</button>
+              <button id="dashboardLogout" type="button" class="btn-executive logout-btn">Logout</button>
+            </div>
+          </div>
+
+          <!-- Main Multi-Page Portal Navigation -->
+          <nav class="main-portal-nav">
+            <div class="portal-nav-heading"><span data-ui="portalLabel">AKSHARA</span><strong data-ui="workspaceLabel">My learning home</strong></div>
+            <button class="nav-tab active" data-page="page-home">🏠 <span data-ui="overview">Home</span></button>
+            <button id="curriculumNavButton" class="nav-tab" data-page="page-curriculum" aria-controls="curriculumSubnav" aria-expanded="false">📖 <span data-ui="learningStructure">Learning Structure</span><b class="nav-caret" aria-hidden="true">⌄</b></button>
+            <div id="curriculumSubnav" class="portal-subnav hidden" aria-label="Learning Structure sections">
+              <button type="button" data-pillar="reading" data-ui="reading">Reading</button>
+              <button type="button" data-pillar="writing" data-ui="writing">Writing</button>
+              <button type="button" data-pillar="vocab" data-ui="vocabulary">Vocabulary</button>
+              <button type="button" data-pillar="comprehension" data-ui="comprehension">Comprehension</button>
+              <button type="button" data-pillar="activities" data-ui="practiceActivities">Practice activities</button>
+            </div>
+            <button class="nav-tab" data-page="page-lessons">🎓 <span data-ui="microLessons">Micro-Lessons</span></button>
+            <button class="nav-tab" data-page="page-voice">🎙️ <span data-ui="speechEngine">Speech Engine</span></button>
+            <button class="nav-tab" data-page="page-reports">📊 <span data-ui="analyticsBadges">Analytics &amp; Badges</span></button>
+          </nav>
+
+          <!-- HOME: a calm starting point, before choosing a learning activity -->
+          <div id="page-home" class="dash-page active">
+            <header class="page-intro overview-intro">
+              <div><p class="page-kicker">WELCOME HOME</p><h3>What would you like to learn today?</h3><p>Choose one small activity. Akshara will guide you step by step, at your own pace.</p></div>
+              <button class="page-action" type="button" data-go-page="page-lessons">Start my next lesson <span>→</span></button>
+            </header>
+            <div id="recommendationCard" class="recommendation-banner hidden">
+              <div class="rec-badge">AI PERSONALIZATION INSIGHT</div>
+              <p id="recommendationText"></p>
+              <div class="recommendation-feedback"><span>Was this helpful?</span><button type="button" data-recommendation-feedback="true">Yes</button><button type="button" data-recommendation-feedback="false">Not quite</button></div>
+            </div>
+
+            <section class="learning-journey-card">
+              <div class="journey-companion" aria-hidden="true">🌱</div>
+              <div class="journey-copy">
+                <p class="journey-label">READY WHEN YOU ARE</p>
+                <h3 id="journeyNextLesson">Your first lesson is ready!</h3>
+                <p id="journeyProgressText">Take one small step today. It all adds up.</p>
+                <div class="journey-progress" aria-label="Learning path progress"><span id="journeyProgressFill" style="width:0%"></span></div>
+                <div class="journey-meta"><span id="journeyMinutes">5 min</span><span>•</span><span>Easy, guided practice</span></div>
+              </div>
+              <button class="journey-button" type="button" data-go-page="page-lessons">Begin activity <span>→</span></button>
+            </section>
+
+            <div class="stats-overview-grid">
+              <div class="stat-card gold">
+                <div class="stat-icon">☀</div>
+                <div class="stat-content">
+                  <span class="stat-label">TODAY'S STEP</span>
+                  <h4 id="goalStatusTitle">Daily Micro-Lesson</h4>
+                  <div class="goal-track"><i id="goalFill"></i></div>
+                  <p id="goalText" class="stat-sub">Daily target active</p>
+                </div>
+              </div>
+
+              <div class="stat-card green">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-content">
+                  <span class="stat-label">MY LEVEL</span>
+                  <h4 id="dashLevelBadge">Beginner</h4>
+                  <p class="stat-sub">Foundational Tier</p>
+                </div>
+              </div>
+
+              <div class="stat-card teal">
+                <div class="stat-icon">🎙️</div>
+                <div class="stat-content">
+                  <span class="stat-label">PRACTICE POINTS</span>
+                  <h4 id="dashXpVal">0 XP Earned</h4>
+                  <p class="stat-sub">Gamified Progress</p>
+                </div>
+              </div>
+
+              <div class="stat-card purple">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-content">
+                  <span class="stat-label">LEARNING DAYS</span>
+                  <h4 id="dashStreakVal">1 Day Active</h4>
+                  <p class="stat-sub">Consistent Learner</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="overview-feature-grid">
+              <section class="dash-section skill-snapshot-card">
+                <div class="section-header">
+                  <div><p class="section-eyebrow">SKILL SNAPSHOT</p><h3>Your learning strengths</h3></div>
+                  <span class="status-pill green">Live profile</span>
+                </div>
+                <p class="feature-helper">Your practice results help Akshara choose what to recommend next.</p>
+                <div class="skill-meter-list">
+                  <div class="skill-meter"><span>Reading</span><div><i id="skillReading" style="width:0%"></i></div><b id="skillReadingValue">—</b></div>
+                  <div class="skill-meter"><span>Writing</span><div><i id="skillWriting" style="width:0%"></i></div><b id="skillWritingValue">—</b></div>
+                  <div class="skill-meter"><span>Comprehension</span><div><i id="skillComprehension" style="width:0%"></i></div><b id="skillComprehensionValue">—</b></div>
+                  <div class="skill-meter"><span>Speaking</span><div><i id="skillPronunciation" style="width:0%"></i></div><b id="skillPronunciationValue">—</b></div>
+                </div>
+              </section>
+              <section class="dash-section quick-actions-card">
+                <div class="section-header"><div><p class="section-eyebrow">QUICK PRACTICE</p><h3>Choose your next activity</h3></div></div>
+                <div class="quick-actions-list">
+                  <button type="button" data-go-page="page-curriculum" data-open-pillar="vocab"><span>🔤</span><strong>Review vocabulary</strong><small>Build useful words</small><b>→</b></button>
+                  <button type="button" data-go-page="page-voice"><span>🎙️</span><strong>Practise speaking</strong><small>Improve pronunciation</small><b>→</b></button>
+                  <button type="button" data-go-page="page-reports"><span>📊</span><strong>View your report</strong><small>See your progress</small><b>→</b></button>
+                </div>
+              </section>
+            </div>
+            <section class="dash-section weekly-checkin-card">
+              <div class="section-header"><div><p class="section-eyebrow">WEEKLY CHECK-IN</p><h3>Keep your learning habit going</h3></div><span class="status-pill gold">Consistency matters</span></div>
+              <div class="weekly-checkin-content"><p>Small, regular practice makes new words easier to remember.</p><div class="week-dots" aria-label="Weekly learning activity"><span class="streak-day">M</span><span class="streak-day">T</span><span class="streak-day">W</span><span class="streak-day">T</span><span class="streak-day">F</span><span class="streak-day">S</span><span class="streak-day">S</span></div></div>
+            </section>
+
+            <section class="dash-section">
+              <div class="section-header">
+                <div>
+                  <p class="section-eyebrow">BENCHMARK FRAMEWORK</p>
+                  <h3>Defined Proficiency Levels</h3>
+                </div>
+                <span class="status-pill">Proficiency Tiers</span>
+              </div>
+              <div class="levels-grid-pro">
+                <div class="level-card-pro active">
+                  <div class="level-header"><span class="badge">0 - 35%</span><h4>🥉 Beginner</h4></div>
+                  <p>Letter recognition, sound decoding, & ~50 basic words.</p>
+                  <div class="progress-bar-small"><span style="width: 35%"></span></div>
+                </div>
+                <div class="level-card-pro">
+                  <div class="level-header"><span class="badge">36 - 65%</span><h4>🥈 Elementary</h4></div>
+                  <p>Reading 3-4 word sentences, signs, & writing name.</p>
+                  <div class="progress-bar-small"><span style="width: 65%"></span></div>
+                </div>
+                <div class="level-card-pro">
+                  <div class="level-header"><span class="badge">66 - 85%</span><h4>🥇 Intermediate</h4></div>
+                  <p>Paragraph comprehension & everyday message writing.</p>
+                  <div class="progress-bar-small"><span style="width: 85%"></span></div>
+                </div>
+                <div class="level-card-pro">
+                  <div class="level-header"><span class="badge">86 - 100%</span><h4>🏆 Advanced</h4></div>
+                  <p>Fluent story reading, form filling, & communication.</p>
+                  <div class="progress-bar-small"><span style="width: 100%"></span></div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- TAB PAGE 2: LEARNING CONTENT STRUCTURE (5 PILLARS + FLASHCARDS) -->
+          <div id="page-curriculum" class="dash-page">
+            <header class="page-intro">
+              <div><p class="page-kicker">PRACTISE BY SKILL</p><h3>Build literacy one skill at a time</h3><p>Choose a pillar and work through short, supportive activities at your own pace.</p></div>
+              <span class="page-step">Skill practice</span>
+            </header>
+            <section class="dash-section content-structure-card">
+              <div class="section-header">
+                <div>
+                  <p class="section-eyebrow">CORE CURRICULUM</p>
+                  <h3>Learning Content Structure</h3>
+                </div>
+                <span class="status-pill green">5 Pillars Active</span>
+              </div>
+              <p class="section-desc">Select a learning pillar to practise with instant feedback. Use Next anytime for continuous, fresh practice.</p>
+              
+              <div id="pillarDisplay" class="exercise-box-pro">
+                <!-- Dynamically loaded by JS -->
+              </div>
+
+              <div id="flashcardsSection" class="flashcards-section-pro hidden" style="margin-top:28px;">
+                <div class="section-header">
+                  <div>
+                    <p class="section-eyebrow">FLIP & LEARN</p>
+                    <h3>Interactive Vocabulary Flashcards</h3>
+                  </div>
+                  <span class="status-pill teal">3D Flip Cards</span>
+                </div>
+                <div id="flashcardsContainer" class="flashcards-grid"></div>
+              </div>
+            </section>
+          </div>
+
+          <!-- TAB PAGE 3: MICRO-LESSONS & TIMELINE -->
+          <div id="page-lessons" class="dash-page">
+            <header class="page-intro">
+              <div><p class="page-kicker">FIRST STEPS</p><h3>Learn from what you already know</h3><p>We begin with familiar pictures, sounds, and speaking. Letters come later, when you feel ready.</p></div>
+              <span class="page-step">Gentle learning</span>
+            </header>
+            <section class="dash-section beginner-lesson-section">
+              <div class="section-header">
+                <div>
+                  <p class="section-eyebrow">TODAY’S FIRST STEP</p>
+                  <h3>See it. Hear it. Say it.</h3>
+                </div>
+                <span class="status-pill green">No reading needed</span>
+              </div>
+              <p class="path-helper">There is no rush. Tap the speaker, look at the picture, and answer by choosing an image.</p>
+              <div id="beginnerLessonCard" class="beginner-lesson-card" aria-live="polite"></div>
+            </section>
+
+            <section class="dash-section">
+              <div class="section-header">
+                <div>
+                  <p class="section-eyebrow">WHEN YOU FEEL READY</p>
+                  <h3>Your next learning path</h3>
+                </div>
+                <span class="status-pill green" id="pathBadgeLevel">Beginner</span>
+              </div>
+              <p class="path-helper">These short lessons introduce letters and simple words gradually, after the picture-and-sound activity.</p>
+              <div id="courseList" class="course-list-pro"></div>
+            </section>
+
+            <section class="dash-section smart-lesson-lab">
+              <div class="section-header">
+                <div><p class="section-eyebrow">SMART LESSON LAB</p><h3>A lesson made for you</h3></div>
+                <span class="status-pill lime">Adaptive</span>
+              </div>
+              <p class="smart-lesson-helper">Akshara looks at your skill profile and creates a short activity for the area that needs the most practice.</p>
+              <div class="smart-lesson-actions">
+                <select id="smartLessonSkill" aria-label="Choose a skill for your personalized lesson">
+                  <option value="">Let Akshara choose</option><option value="reading">Reading</option><option value="writing">Writing</option><option value="comprehension">Comprehension</option><option value="pronunciation">Speaking</option>
+                </select>
+                <button id="generateLessonBtn" class="primary" type="button">✨ Generate my lesson</button>
+              </div>
+              <div id="generatedLessonCard" class="generated-lesson-card hidden" aria-live="polite"></div>
+            </section>
+
+            <section class="dash-section practice-corner-pro">
+              <div class="section-header">
+                <div>
+                  <p class="section-eyebrow">GAMIFIED LEARNING</p>
+                  <h3>Practice Corner (Dynamic Session Pool)</h3>
+                </div>
+                <button type="button" class="text-button" onclick="refreshSessionQuestions()">✨ Refresh Quiz Items</button>
+              </div>
+              <p style="color:var(--muted); font-size:13.5px; margin:0 0 16px;">Questions refresh dynamically on every login session. Practice to earn XP!</p>
+              <article id="liveQuestionCard" class="live-question-card" aria-live="polite"></article>
+              <div id="puzzleList" class="puzzle-list-pro"></div>
+            </section>
+          </div>
+
+          <!-- TAB PAGE 4: SPEECH ENGINE & VOICE COACH -->
+          <div id="page-voice" class="dash-page">
+            <header class="page-intro voice-intro">
+              <div><p class="page-kicker">SPEAK WITH CONFIDENCE</p><h3>Listen, repeat, and improve</h3><p>Use your microphone to receive feedback on the phrase you practised.</p></div>
+              <span class="page-step">Voice practice</span>
+            </header>
+            <section class="dash-section voice-section-card">
+              <div class="section-header">
+                <div>
+                  <p class="section-eyebrow" style="color:var(--lime);">AI SPEECH ENGINE</p>
+                  <h3 style="color:#fff;">Voice Learning & Pronunciation Coach</h3>
+                </div>
+                <span class="status-pill lime">Web Speech API</span>
+              </div>
+              <p style="color:#d8e5dd; font-size:13.5px; margin:0 0 16px;">Listen to native audio pronunciations and test your voice for real-time accuracy scoring:</p>
+
+              <div id="voiceCoachCard" class="voice-card-pro">
+                <div class="voice-main-row">
+                  <div>
+                    <span class="voice-tag">Target Phrase</span>
+                    <h4 id="voiceTargetText" class="voice-phrase">नमस्ते (Namaste)</h4>
+                  </div>
+                  <div class="voice-controls">
+                    <button id="listenBtn" type="button" class="btn-voice secondary">🔊 Listen (TTS)</button>
+                    <button id="speakBtn" type="button" class="btn-voice primary">🎙️ Record & Evaluate</button>
+                    <button id="nextVoiceQuestion" type="button" class="btn-voice secondary">Next phrase →</button>
+                  </div>
+                </div>
+                <!-- Audio Wave Visualizer Canvas -->
+                <canvas id="voiceVisualizerCanvas" width="280" height="35" style="margin-top:12px; display:block; border-radius:6px; background:rgba(0,0,0,0.15);"></canvas>
+                <p id="voiceStatus" class="voice-status-msg"></p>
+                <div id="voiceResult" class="voice-result-box hidden">
+                  <p><strong>Spoken text:</strong> <span id="voiceSpoken"></span></p>
+                  <p><strong>AI Accuracy Score:</strong> <span id="voiceScore" class="score-num"></span></p>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <!-- TAB PAGE 5: PERFORMANCE ANALYTICS & ACHIEVEMENTS -->
+          <div id="page-reports" class="dash-page">
+            <header class="page-intro">
+              <div><p class="page-kicker">TRACK YOUR GROWTH</p><h3>Your learning progress</h3><p>Review completed lessons, voice practice, and the badges you have earned.</p></div>
+              <button class="page-action" type="button" id="pageCertificateBtn">View certificate <span>→</span></button>
+            </header>
+            <section class="dash-section report-card-pro">
+              <div class="section-header">
+                <div>
+                  <p class="section-eyebrow">EXECUTIVE ANALYTICS</p>
+                  <h3>Learner Performance & Progress Report</h3>
+                </div>
+              </div>
+              <div class="report-metrics-grid">
+                <div class="r-metric"><p>LESSONS COMPLETED</p><h3 id="rptLessons">Active</h3></div>
+                <div class="r-metric"><p>VOICE ACCURACY</p><h3 id="rptVoice">High</h3></div>
+                <div class="r-metric"><p>BENCHMARK TIER</p><h3 id="rptLevel">Beginner</h3></div>
+              </div>
+            </section>
+
+            <!-- GAMIFIED BADGES & ACHIEVEMENTS -->
+            <section class="dash-section">
+              <div class="section-header">
+                <div>
+                  <p class="section-eyebrow">GAMIFICATION</p>
+                  <h3>Unlocked Achievement Badges</h3>
+                </div>
+                <span class="status-pill gold">Badges & Trophies</span>
+              </div>
+              <div id="achievementsGrid" class="achievements-grid">
+                <!-- Loaded dynamically by JS -->
+              </div>
+            </section>
+
+            <section class="team-consensus-card-pro">
+              <div class="consensus-header">
+                <div class="consensus-icon">🤝</div>
+                <div>
+                  <p class="section-eyebrow" style="color:var(--emerald);">GOVERNANCE & ARCHITECTURE</p>
+                  <h3>Team Discussion & Design Conclusion</h3>
+                </div>
+              </div>
+              <p>After team discussion and architectural alignment, we concluded that adult neo-learners progress best when curriculum is divided into 5 focused learning pillars (Reading, Writing, Vocabulary, Comprehension, Practice) paired with clear benchmark definitions across all regional languages.</p>
+              <div class="consensus-badges">
+                <span class="c-badge">✓ Dynamic Session Shuffling</span>
+                <span class="c-badge">✓ 5 Pillars Integrated</span>
+                <span class="c-badge">✓ Multilingual Benchmarks</span>
+                <span class="c-badge">✓ Speech Engine Validated</span>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="profileView" class="hidden">
+          <div class="profile-top"><div><p class="eyebrow">YOUR LEARNER PROFILE</p><h2>Hello, <span id="learnerName"></span>!</h2><p>Keep these details up to date so we can personalise your learning.</p></div><button id="logout" type="button" class="logout">Log out</button></div>
+          <form id="profileForm" novalidate>
+            <div class="avatar" id="avatar">P</div>
+            <div class="field-grid"><label>Full name<input name="name" required /></label><label>Age<input name="age" type="number" min="5" max="120" required /></label></div>
+            <label>Email address<input name="email" type="email" disabled /></label>
+            <div class="field-grid"><label>Preferred language<select name="language"><option>English</option><option>Hindi</option><option>Telugu</option><option>Tamil</option><option>Kannada</option><option>Malayalam</option><option>Bengali</option><option>Marathi</option></select></label><label>Current level<select name="proficiency"><option>Beginner</option><option>Elementary</option><option>Intermediate</option><option>Advanced</option></select></label></div>
+            <label>Learning goal<select name="goal"><option>Reading</option><option>Writing</option><option>Speaking</option><option>Everyday communication</option></select></label>
+            <p class="success" id="profileMessage" aria-live="polite"></p>
+            <button id="openDashboard" class="primary" type="button">Go to my learning home <span>→</span></button>
+            <button id="retakeAssessment" class="text-button" type="button">Retake starting assessment</button>
+            <button class="primary" type="submit">Save changes <span>✓</span></button>
+          </form>
+        </section>
+
+      <!-- FLOATING AI TUTOR FAB & DRAWER -->
+      <button id="toggleAiCoachBtn" class="ai-coach-fab" type="button" title="Ask AI Tutor Assistant">🤖</button>
+      <div id="aiCoachDrawer" class="ai-coach-drawer hidden">
+        <div class="ai-coach-header">
+          <div>
+            <h4>🤖 Akshara AI Coach</h4>
+            <p>Your interactive literacy assistant</p>
+          </div>
+          <button id="closeAiCoachBtn" class="social-modal-close" type="button">&times;</button>
+        </div>
+        <div class="ai-coach-body">
+          <p id="aiCoachHintText" class="ai-hint-box">Welcome! Ask me for hints or practice tips anytime as you work through lessons.</p>
+          <div class="ai-coach-quick-actions">
+            <button type="button" class="btn-executive" onclick="openAiCoachHint('💡 Tip: Practice reading short words out loud to build speech muscle memory.')">💡 Get Practice Tip</button>
+            <button type="button" class="btn-executive" onclick="openAiCoachHint('📖 Hint: Pay attention to vowel sounds in regional languages!')">📖 Grammar Insight</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRINTABLE LITERACY CERTIFICATE MODAL -->
+      <div id="certificateModal" class="social-modal-overlay hidden" role="dialog" aria-modal="true">
+        <div class="social-modal-card cert-card">
+          <button id="closeCertModal" class="social-modal-close" type="button">&times;</button>
+          <div class="certificate-frame">
+            <div class="cert-header">
+              <span class="cert-logo">अ</span>
+              <h2>AKSHARA LITERACY ACADEMY</h2>
+              <p>Certificate of Educational Advancement</p>
+            </div>
+            <div class="cert-body">
+              <p>This official certificate is proudly awarded to</p>
+              <h1 id="certName">Priya Learner</h1>
+              <p>for successfully completing foundational micro-lessons and demonstrating proficiency in</p>
+              <h3 id="certLang">Hindi Literacy</h3>
+              <p class="cert-level-tag">BENCHMARK TIER: <span id="certLevel">Beginner</span></p>
+            </div>
+            <div class="cert-footer">
+              <div>
+                <p class="cert-sign">Akshara AI Board</p>
+                <span>Academic Seal</span>
+              </div>
+              <div>
+                <p id="certDate">August 2026</p>
+                <span>Date Issued</span>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:16px; text-align:right;">
+            <button id="printCertBtn" type="button" class="primary">🖨️ Print / Download Certificate</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Authentic Google / Social OAuth Sign-In Window -->
+      <div id="googleOauthModal" class="google-oauth-overlay hidden" role="dialog" aria-modal="true">
+        <div class="google-oauth-card">
+          <button id="closeGoogleOauthBtn" type="button" class="google-oauth-close" title="Close">&times;</button>
+          
+          <div class="google-header">
+            <svg id="oauthProviderLogo" class="google-g-logo" width="38" height="38" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <h2 id="googleOauthTitle">Sign in with Google</h2>
+            <p id="googleOauthSub">to continue to <strong style="color:#202124;">Akshara AI</strong></p>
+          </div>
+
+          <form id="googleEmailForm" novalidate>
+            <div class="google-input-group">
+              <input type="text" id="googleUserName" required placeholder=" " />
+              <label for="googleUserName">Full name (e.g. Poojitha Gorrapati)</label>
+            </div>
+
+            <div class="google-input-group" style="margin-top:16px;">
+              <input type="email" id="googleUserEmail" required placeholder=" " />
+              <label for="googleUserEmail">Email or phone</label>
+            </div>
+
+            <div class="google-meta-links">
+              <a href="#" onclick="return false;">Forgot email?</a>
+            </div>
+
+            <p class="google-notice">
+              To continue, Google will share your name, email address, language preference, and profile picture with Akshara AI.
+            </p>
+
+            <p id="googleOauthError" class="error" aria-live="polite" style="margin: 8px 0 0;"></p>
+
+            <div class="google-actions">
+              <button type="button" class="google-text-btn" id="cancelGoogleOauth">Cancel</button>
+              <button type="submit" class="google-primary-btn" id="googleNextBtn">Next</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
