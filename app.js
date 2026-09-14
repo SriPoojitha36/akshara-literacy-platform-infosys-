@@ -50,12 +50,6 @@ const questions = [
     options: ['I need lots of support', 'I am ready to try', 'I feel confident']
   },
   {
-    key: 'daily_time',
-    title: (lang) => `How much time can you practice ${lang} each day?`,
-    help: (lang) => `Small, regular practice creates real progress in ${lang}.`,
-    options: ['5 minutes', '10 minutes', '15 minutes or more']
-  },
-  {
     key: 'reading_check',
     title: (lang) => `Reading check: choose the greeting in ${lang}`,
     help: () => 'This short activity helps us understand your starting reading level.',
@@ -936,7 +930,6 @@ if ($('#nextQuestion')) $('#nextQuestion').addEventListener('click', async () =>
         reading: assessment.reading,
         writing: assessment.writing,
         confidence: assessment.confidence,
-        daily_time: assessment.daily_time,
         reading_check: assessment.reading_check,
         writing_check: assessment.writing_check,
         comprehension_check: assessment.comprehension_check
@@ -1015,6 +1008,7 @@ async function updateLanguage(newLang, saveToDb = true) {
   setupVoiceCoach(newLang);
   renderPillarContent(currentPillar, newLang);
   renderFlashcards(newLang);
+  renderDailyWord(newLang);
   beginnerMicroStep = 0;
   renderBeginnerMicroLesson(newLang);
   filterAndRenderCourses(newLang);
@@ -1041,11 +1035,11 @@ if ($('#dashLangSelect')) {
 // Learning content remains in dashLangSelect; this dictionary translates the
 // persistent navigation so a learner can use the portal comfortably.
 const interfaceCopy = {
-  English: { portalLabel: 'AKSHARA', workspaceLabel: 'My learning home', overview: 'Home', learningStructure: 'Learning Structure', microLessons: 'Micro-Lessons', speechEngine: 'Speech Engine', analyticsBadges: 'Analytics & Badges', reading: 'Reading', writing: 'Writing', vocabulary: 'Vocabulary', comprehension: 'Comprehension', practiceActivities: 'Practice activities' },
-  Hindi: { portalLabel: 'अक्षरा', workspaceLabel: 'मेरा सीखने का घर', overview: 'होम', learningStructure: 'सीखने की संरचना', microLessons: 'सूक्ष्म पाठ', speechEngine: 'भाषण अभ्यास', analyticsBadges: 'विश्लेषण और बैज', reading: 'पठन', writing: 'लेखन', vocabulary: 'शब्दावली', comprehension: 'समझ', practiceActivities: 'अभ्यास गतिविधियाँ' },
-  Telugu: { portalLabel: 'అక్షర', workspaceLabel: 'నా అభ్యాస నిలయం', overview: 'హోమ్', learningStructure: 'అభ్యాస నిర్మాణం', microLessons: 'చిన్న పాఠాలు', speechEngine: 'స్పీచ్ అభ్యాసం', analyticsBadges: 'విశ్లేషణ & బ్యాడ్జ్‌లు', reading: 'చదవడం', writing: 'రాయడం', vocabulary: 'పదజాలం', comprehension: 'అవగాహన', practiceActivities: 'అభ్యాస కార్యకలాపాలు' },
-  Tamil: { portalLabel: 'அக்ஷரா', workspaceLabel: 'என் கற்றல் முகப்பு', overview: 'முகப்பு', learningStructure: 'கற்றல் அமைப்பு', microLessons: 'சிறு பாடங்கள்', speechEngine: 'பேச்சுப் பயிற்சி', analyticsBadges: 'பகுப்பாய்வு & பதக்கங்கள்', reading: 'வாசித்தல்', writing: 'எழுதுதல்', vocabulary: 'சொற்களஞ்சியம்', comprehension: 'புரிதல்', practiceActivities: 'பயிற்சி செயல்கள்' },
-  Kannada: { portalLabel: 'ಅಕ್ಷರ', workspaceLabel: 'ನನ್ನ ಕಲಿಕೆ ಮುಖಪುಟ', overview: 'ಮುಖಪುಟ', learningStructure: 'ಕಲಿಕೆ ರಚನೆ', microLessons: 'ಸಣ್ಣ ಪಾಠಗಳು', speechEngine: 'ಮಾತಿನ ಅಭ್ಯಾಸ', analyticsBadges: 'ವಿಶ್ಲೇಷಣೆ ಮತ್ತು ಬ್ಯಾಡ್ಜ್‌ಗಳು', reading: 'ಓದುವುದು', writing: 'ಬರೆಯುವುದು', vocabulary: 'ಪದಕೋಶ', comprehension: 'ತಿಳುವಳಿಕೆ', practiceActivities: 'ಅಭ್ಯಾಸ ಚಟುವಟಿಕೆಗಳು' }
+  English: { portalLabel: 'AKSHARA', workspaceLabel: 'My learning home', overview: 'Home', learningStructure: 'Learning Structure', microLessons: 'My Learning Path', speechEngine: 'Speech Engine', analyticsBadges: 'Analytics & Badges', reading: 'Reading', writing: 'Writing', vocabulary: 'Vocabulary', comprehension: 'Comprehension', practiceActivities: 'Practice activities' },
+  Hindi: { portalLabel: 'अक्षरा', workspaceLabel: 'मेरा सीखने का घर', overview: 'होम', learningStructure: 'सीखने की संरचना', microLessons: 'मेरा सीखने का पथ', speechEngine: 'भाषण अभ्यास', analyticsBadges: 'विश्लेषण और बैज', reading: 'पठन', writing: 'लेखन', vocabulary: 'शब्दावली', comprehension: 'समझ', practiceActivities: 'अभ्यास गतिविधियाँ' },
+  Telugu: { portalLabel: 'అక్షర', workspaceLabel: 'నా అభ్యాస నిలయం', overview: 'హోమ్', learningStructure: 'అభ్యాస నిర్మాణం', microLessons: 'నా అభ్యాస మార్గం', speechEngine: 'స్పీచ్ అభ్యాసం', analyticsBadges: 'విశ్లేషణ & బ్యాడ్జ్‌లు', reading: 'చదవడం', writing: 'రాయడం', vocabulary: 'పదజాలం', comprehension: 'అవగాహన', practiceActivities: 'అభ్యాస కార్యకలాపాలు' },
+  Tamil: { portalLabel: 'அக்ஷரா', workspaceLabel: 'என் கற்றல் முகப்பு', overview: 'முகப்பு', learningStructure: 'கற்றல் அமைப்பு', microLessons: 'என் கற்றல் பாதை', speechEngine: 'பேச்சுப் பயிற்சி', analyticsBadges: 'பகுப்பாய்வு & பதக்கங்கள்', reading: 'வாசித்தல்', writing: 'எழுதுதல்', vocabulary: 'சொற்களஞ்சியம்', comprehension: 'புரிதல்', practiceActivities: 'பயிற்சி செயல்கள்' },
+  Kannada: { portalLabel: 'ಅಕ್ಷರ', workspaceLabel: 'ನನ್ನ ಕಲಿಕೆ ಮುಖಪುಟ', overview: 'ಮುಖಪುಟ', learningStructure: 'ಕಲಿಕೆ ರಚನೆ', microLessons: 'ನನ್ನ ಕಲಿಕೆ ಪಥ', speechEngine: 'ಮಾತಿನ ಅಭ್ಯಾಸ', analyticsBadges: 'ವಿಶ್ಲೇಷಣೆ ಮತ್ತು ಬ್ಯಾಡ್ಜ್‌ಗಳು', reading: 'ಓದುವುದು', writing: 'ಬರೆಯುವುದು', vocabulary: 'ಪದಕೋಶ', comprehension: 'ತಿಳುವಳಿಕೆ', practiceActivities: 'ಅಭ್ಯಾಸ ಚಟುವಟಿಕೆಗಳು' }
 };
 
 function updateInterfaceLanguage(language) {
@@ -1110,6 +1104,7 @@ async function showDashboard(user) {
   setupVoiceCoach(userLang);
   renderPillarContent('reading', userLang);
   renderFlashcards(userLang);
+  renderDailyWord(userLang);
   beginnerMicroStep = 0;
   renderBeginnerMicroLesson(userLang);
 }
@@ -1160,39 +1155,50 @@ async function filterAndRenderCourses(language) {
     if (list && courseData.courses) {
       list.innerHTML = '';
 
-      // Prioritize learner's preferred language courses first!
-      const sortedCourses = [...courseData.courses].sort((a, b) => {
-        if (a.language === language) return -1;
-        if (b.language === language) return 1;
-        return 0;
-      });
+      // Micro-Lessons must stay focused: show only the learner's preferred language.
+      const preferredCourses = courseData.courses.filter(course => course.language === language);
+      if (!preferredCourses.length) {
+        list.innerHTML = `<p class="path-helper">Your ${language} lessons are being prepared. Please choose another preferred language or try again shortly.</p>`;
+      }
 
-      for (const course of sortedCourses) {
+      for (const course of preferredCourses) {
         try {
           const topics = (await api(`/api/courses/${course.id}/topics`)).topics;
           const topicContent = await Promise.all(topics.map(async topic => ({ topic, lessons: (await api(`/api/topics/${topic.id}/lessons`)).lessons })));
           const isPreferred = course.language === language;
           const card = document.createElement('article');
-          card.className = `course-card ${isPreferred ? 'preferred-course' : ''}`;
+          const allLessons = topicContent.flatMap(({ lessons }) => lessons);
+          let activeLessonFound = false;
+          const lessonState = lesson => {
+            if (Number(lesson.completion_percent) >= 100) return 'completed';
+            if (!activeLessonFound) { activeLessonFound = true; return 'active'; }
+            return 'locked';
+          };
+          card.className = `course-card learning-path-card ${isPreferred ? 'preferred-course' : ''}`;
           card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <p class="eyebrow">${course.language} · ${course.proficiency_level}</p>
-              ${isPreferred ? '<span class="status-pill green">Preferred Language</span>' : ''}
+            <div class="learning-path-topbar">
+              <div><p class="eyebrow">${course.language} · ${course.proficiency_level}</p><h3>${course.title}</h3><p>${course.description}</p></div>
+              <div class="path-summary"><span>🧭</span><b>${allLessons.filter(lesson => Number(lesson.completion_percent) >= 100).length}/${allLessons.length}</b><small>Lessons</small></div>
             </div>
-            <h3>${course.title}</h3>
-            <p>${course.description}</p>
-            ${topicContent.map(({topic, lessons}, topicIndex) => `
-              <div class="topic-block">
-                <h4><span class="topic-icon">✦</span>${topic.title}</h4>
-                <div class="lesson-path">
-                  ${lessons.map((lesson, lessonIndex) => `<div class="lesson-row">
-                    <span class="lesson-node" aria-hidden="true">${lessonIndex === 0 ? '★' : '✦'}</span>
-                    <span class="lesson-details"><strong>${lesson.title}</strong><small>Guided practice · ${lesson.estimated_minutes} min</small></span>
-                    <button data-lesson="${lesson.id}" data-lesson-title="${lesson.title}" data-lesson-kind="${topicIndex === 0 ? (lessonIndex === 0 ? 'letter' : 'word') : (lessonIndex === 0 ? 'greeting' : 'everyday')}">Start activity</button>
-                  </div>`).join('')}
-                </div>
-              </div>
-            `).join('')}
+            <div class="learning-path-map">
+              ${topicContent.map(({topic, lessons}, topicIndex) => `
+                <section class="path-map-topic">
+                  <div class="path-section-banner"><span>SECTION ${topicIndex + 1}</span><h4>${topic.title}</h4></div>
+                  <div class="path-steps">
+                    ${lessons.map((lesson, lessonIndex) => {
+                      const state = lessonState(lesson);
+                      const side = lessonIndex % 2 === 0 ? 'path-left' : 'path-right';
+                      const icon = state === 'completed' ? '✓' : state === 'active' ? '▶' : '🔒';
+                      const action = state === 'completed' ? 'Completed ✓' : state === 'active' ? 'Start lesson' : 'Locked';
+                      return `<div class="path-step ${side} ${state}">
+                        <span class="path-node" aria-label="${state} lesson">${icon}</span>
+                        <article class="path-lesson-card"><p>${state === 'active' ? 'YOUR NEXT STEP' : state === 'completed' ? 'COMPLETED' : 'UP NEXT'}</p><strong>${lesson.title}</strong><small>Guided practice · ${lesson.estimated_minutes} min</small>
+                        <button ${state === 'locked' ? 'disabled' : ''} data-lesson="${lesson.id}" data-lesson-title="${lesson.title}" data-lesson-kind="${topicIndex === 0 ? (lessonIndex === 0 ? 'letter' : 'word') : (lessonIndex === 0 ? 'greeting' : 'everyday')}">${action}</button></article>
+                      </div>`;
+                    }).join('')}
+                  </div>
+                </section>`).join('')}
+            </div>
           `;
           list.append(card);
         } catch (err) {}
@@ -1240,6 +1246,97 @@ const beginnerMicroContent = {
   Bengali: { greeting: 'নমস্কার', letter: 'অ', letterChoices: ['অ', 'ক', 'ম'], word: 'বই', everyday: 'আমার জল চাই' },
   Marathi: { greeting: 'नमस्कार', letter: 'अ', letterChoices: ['अ', 'क', 'म'], word: 'पुस्तक', everyday: 'मला पाणी हवे आहे' }
 };
+
+// Core letters are shown directly in Micro-Lessons so absolute beginners can
+// explore the writing system before they are asked to read words.
+const alphabetLetters = {
+  English: 'A B C D E F G H I J K L M N O P Q R S T U V W X Y Z'.split(' '),
+  Hindi: 'अ आ इ ई उ ऊ ऋ ए ऐ ओ औ क ख ग घ ङ च छ ज झ ञ ट ठ ड ढ ण त थ द ध न प फ ब भ म य र ल व श ष स ह'.split(' '),
+  Telugu: 'అ ఆ ఇ ఈ ఉ ఊ ఋ ఎ ఏ ఐ ఒ ఓ ఔ క ఖ గ ఘ ఙ చ ఛ జ ఝ ఞ ట ఠ డ ఢ ణ త థ ద ధ న ప ఫ బ భ మ య ర ల వ శ ష స హ'.split(' '),
+  Tamil: 'அ ஆ இ ஈ உ ஊ எ ஏ ஐ ஒ ஓ ஔ க ங ச ஞ ட ண த ந ப ம ய ர ல வ ழ ள ற ன'.split(' '),
+  Kannada: 'ಅ ಆ ಇ ಈ ಉ ಊ ಋ ಎ ಏ ಐ ಒ ಓ ಔ ಕ ಖ ಗ ಘ ಙ ಚ ಛ ಜ ಝ ಞ ಟ ಠ ಡ ಢ ಣ ತ ಥ ದ ಧ ನ ಪ ಫ ಬ ಭ ಮ ಯ ರ ಲ ವ ಶ ಷ ಸ ಹ'.split(' '),
+  Malayalam: 'അ ആ ഇ ഈ ഉ ഊ ഋ എ ഏ ഐ ഒ ഓ ഔ ക ഖ ഗ ഘ ങ ച ഛ ജ ഝ ഞ ട ഠ ഡ ഢ ണ ത ഥ ദ ധ ന പ ഫ ബ ഭ മ യ ര ല വ ശ ഷ സ ഹ'.split(' '),
+  Bengali: 'অ আ ই ঈ উ ঊ ঋ এ ঐ ও ঔ ক খ গ ঘ ঙ চ ছ জ ঝ ঞ ট ঠ ড ঢ ণ ত থ দ ধ ন প ফ ব ভ ম য র ল শ ষ স হ'.split(' '),
+  Marathi: 'अ आ इ ई उ ऊ ऋ ए ऐ ओ औ क ख ग घ ङ च छ ज झ ञ ट ठ ड ढ ण त थ द ध न प फ ब भ म य र ल व श ष स ह'.split(' ')
+};
+let selectedAlphabetLetter = {};
+
+function renderAlphabetGuidedLesson(card, language) {
+  const letters = alphabetLetters[language] || alphabetLetters.English;
+  const selectedIndex = Number.isInteger(selectedAlphabetLetter[language]) ? selectedAlphabetLetter[language] : 0;
+  const selected = letters[selectedIndex] || letters[0];
+  card.innerHTML = `
+    <p class="beginner-step">${activeGuidedLessonTitle || 'LETTER KNOWLEDGE'} · GUIDED PRACTICE</p>
+    <h4>Learn ${language} letters</h4>
+    <p>Choose any letter below. Look at its shape, listen to it, and repeat it slowly.</p>
+    <div class="alphabet-focus">
+      <div id="alphabetFocusLetter" class="alphabet-focus-letter">${selected}</div>
+      <div><p class="beginner-step">TAP LISTEN AND REPEAT</p><h4>Letter: ${selected}</h4><p>Look at this shape. Tap Listen, then say the sound slowly.</p><button id="alphabetListenBtn" type="button" class="secondary">🔊 Listen to this letter</button></div>
+    </div>
+    <div class="alphabet-grid" role="list" aria-label="${language} letters">
+      ${letters.map((letter, index) => `<button type="button" class="alphabet-letter ${index === selectedIndex ? 'active' : ''}" data-alphabet-index="${index}" aria-label="Learn letter ${letter}">${letter}</button>`).join('')}
+    </div>
+    <div class="beginner-actions"><button type="button" id="alphabetRestartBtn" class="secondary">Start with first letter</button><button type="button" id="alphabetFinishBtn" class="primary">I practised letters <span>✓</span></button></div>
+    <p id="alphabetFeedback" class="beginner-feedback"></p>`;
+  if ($('#alphabetListenBtn')) $('#alphabetListenBtn').onclick = () => { playSound('click'); playSpeech(selected, language); };
+  card.querySelectorAll('[data-alphabet-index]').forEach(button => button.addEventListener('click', () => {
+    selectedAlphabetLetter[language] = Number(button.dataset.alphabetIndex);
+    playSound('click');
+    renderAlphabetGuidedLesson(card, language);
+  }));
+  if ($('#alphabetRestartBtn')) $('#alphabetRestartBtn').onclick = () => { selectedAlphabetLetter[language] = 0; renderAlphabetGuidedLesson(card, language); };
+  if ($('#alphabetFinishBtn')) $('#alphabetFinishBtn').onclick = async () => {
+    const finish = $('#alphabetFinishBtn');
+    const feedback = $('#alphabetFeedback');
+    finish.disabled = true;
+    finish.textContent = 'Saving…';
+    try {
+      if (activeGuidedLessonId) await api(`/api/lessons/${activeGuidedLessonId}/progress`, { method: 'PUT', body: JSON.stringify({ completion_percent: 100 }) });
+      await api('/api/practice/submit', { method: 'POST', body: JSON.stringify({ points: 10 }) });
+      feedback.textContent = `Excellent! You explored the ${language} letters.`;
+      feedback.style.color = '#287257';
+      finish.textContent = 'Completed ✓';
+      playSound('success');
+      filterAndRenderCourses(language);
+      activeGuidedLessonId = null;
+      activeGuidedLessonTitle = '';
+    } catch (error) {
+      finish.disabled = false;
+      finish.textContent = 'I practised letters ✓';
+      feedback.textContent = error.message;
+      feedback.style.color = '#b05d43';
+    }
+  };
+}
+
+const dailyWordBank = {
+  English: [['👋', 'Hello', 'A friendly greeting'], ['💧', 'Water', 'Something we drink'], ['📖', 'Book', 'Something we read']],
+  Hindi: [['👋', 'नमस्ते', 'A friendly greeting'], ['💧', 'पानी', 'Something we drink'], ['📖', 'किताब', 'Something we read']],
+  Telugu: [['👋', 'నమస్కారం', 'A friendly greeting'], ['💧', 'నీరు', 'Something we drink'], ['📖', 'పుస్తకం', 'Something we read']],
+  Tamil: [['👋', 'வணக்கம்', 'A friendly greeting'], ['💧', 'நீர்', 'Something we drink'], ['📖', 'புத்தகம்', 'Something we read']],
+  Kannada: [['👋', 'ನಮಸ್ಕಾರ', 'A friendly greeting'], ['💧', 'ನೀರು', 'Something we drink'], ['📖', 'ಪುಸ್ತಕ', 'Something we read']],
+  Malayalam: [['👋', 'നമസ്കാരം', 'A friendly greeting'], ['💧', 'വെള്ളം', 'Something we drink'], ['📖', 'പുസ്തകം', 'Something we read']],
+  Bengali: [['👋', 'নমস্কার', 'A friendly greeting'], ['💧', 'জল', 'Something we drink'], ['📖', 'বই', 'Something we read']],
+  Marathi: [['👋', 'नमस्कार', 'A friendly greeting'], ['💧', 'पाणी', 'Something we drink'], ['📖', 'पुस्तक', 'Something we read']]
+};
+
+function renderDailyWord(language, moveNext = false) {
+  const words = dailyWordBank[language] || dailyWordBank.English;
+  const key = `akshara_daily_word_${language}`;
+  const today = new Date().toDateString();
+  const saved = JSON.parse(localStorage.getItem(key) || '{}');
+  const defaultIndex = new Date().getDate() % words.length;
+  const index = moveNext ? ((Number(saved.index) || 0) + 1) % words.length : (saved.day === today ? Number(saved.index) : defaultIndex);
+  localStorage.setItem(key, JSON.stringify({ day: today, index }));
+  const [icon, word, meaning] = words[index];
+  if ($('#dailyWordIcon')) $('#dailyWordIcon').textContent = icon;
+  if ($('#dailyWordText')) $('#dailyWordText').textContent = word;
+  if ($('#dailyWordMeaning')) $('#dailyWordMeaning').textContent = meaning;
+  if ($('#dailyWordLanguage')) $('#dailyWordLanguage').textContent = language;
+  if ($('#dailyWordStatus')) $('#dailyWordStatus').textContent = '';
+  if ($('#playDailyWord')) $('#playDailyWord').onclick = () => speakText(word, language, message => { if ($('#dailyWordStatus')) $('#dailyWordStatus').textContent = message; });
+  if ($('#nextDailyWord')) $('#nextDailyWord').onclick = () => renderDailyWord(language, true);
+}
 let beginnerMicroStep = 0;
 let activeGuidedLessonId = null;
 let activeGuidedLessonTitle = '';
@@ -1257,6 +1354,10 @@ function openGuidedLesson(lessonId, lessonTitle, lessonKind, language) {
 function renderBeginnerMicroLesson(language) {
   const card = $('#beginnerLessonCard');
   if (!card) return;
+  if (activeGuidedLessonKind === 'letter') {
+    renderAlphabetGuidedLesson(card, language);
+    return;
+  }
   const content = beginnerMicroContent[language] || beginnerMicroContent.English;
   const dots = [0, 1, 2, 3].map(step => `<i class="${step <= beginnerMicroStep ? 'active' : ''}"></i>`).join('');
   const nextButton = '<button type="button" id="beginnerNext" class="primary">Next small step <span>→</span></button>';
@@ -1523,6 +1624,22 @@ function createContinuousPractice(pillar, rawData, index, language) {
   };
 }
 
+function learningVisual(item) {
+  const text = `${item.word || ''} ${item.meaning || ''}`.toLowerCase();
+  if (text.includes('hello') || text.includes('greeting') || text.includes('नमस्ते') || text.includes('నమస్కారం')) return '👋';
+  if (text.includes('water') || text.includes('पानी') || text.includes('నీరు')) return '💧';
+  if (text.includes('book') || text.includes('किताब') || text.includes('పుస్తకం')) return '📚';
+  if (text.includes('home') || text.includes('घर') || text.includes('ఇల్లు')) return '🏠';
+  if (text.includes('sun') || text.includes('सूरज')) return '☀️';
+  if (text.includes('tree') || text.includes('पेड़')) return '🌳';
+  return '✨';
+}
+
+function gameOptions(words, target, index) {
+  const options = rotatePracticeItems(words.filter(item => item.word !== target.word), index).slice(0, 2);
+  return shuffleWithSeed([target, ...options], getSessionSeed() + index * 31).map(item => item.word);
+}
+
 function renderPillarContent(pillar, language) {
   currentPillar = pillar || 'reading';
   const flashcardsSection = $('#flashcardsSection');
@@ -1553,12 +1670,15 @@ function renderPillarContent(pillar, language) {
     container.innerHTML = `
       <h4>✍️ Writing practice</h4>
       <p style="font-size:14px; font-weight:600; margin:4px 0 10px; color:#1e5149;">${item.prompt}</p>
-      <input id="writeInput" type="text" placeholder="Type answer here..." />
+      <p class="writing-help">Choose your ${language} keyboard, listen carefully, then type the word.</p>
+      <input id="writeInput" type="text" lang="${(langCodes[language] || 'en').split('-')[0]}" spellcheck="false" autocapitalize="off" placeholder="Type answer here..." />
       <div style="display:flex; gap:10px; margin-top:8px;">
+        <button id="listenWriteBtn" type="button" class="secondary" style="font-size:13px;">🔊 Listen to word</button>
         <button id="checkWriteBtn" type="button" class="primary" style="font-size:13px; padding:10px 16px;">Check Answer ✓</button>
         <button id="nextWriteBtn" type="button" class="btn-executive" style="font-size:13px;">Next Question ➔</button>
       </div>
       <p id="writeFeedback" class="exercise-feedback"></p>`;
+    if ($('#listenWriteBtn')) $('#listenWriteBtn').onclick = () => { playSound('click'); speakText(item.target, language, message => { const fb = $('#writeFeedback'); if (fb) { fb.textContent = message; fb.style.color = '#52675f'; } }); };
     if ($('#checkWriteBtn')) $('#checkWriteBtn').onclick = () => {
       const val = $('#writeInput').value.trim();
       const fb = $('#writeFeedback');
@@ -1566,6 +1686,7 @@ function renderPillarContent(pillar, language) {
         playSound('success');
         fb.textContent = 'Awesome job! Correct answer. ✓ (+15 XP)';
         fb.style.color = '#287257';
+        api('/api/practice/submit', { method: 'POST', body: JSON.stringify({ points: 15 }) }).catch(() => {});
       } else {
         playSound('error');
         fb.textContent = 'Try again! Double check spelling.';
@@ -1614,23 +1735,41 @@ function renderPillarContent(pillar, language) {
     });
     if ($('#nextCompBtn')) $('#nextCompBtn').onclick = () => { playSound('click'); pillarIndices.comprehension++; renderPillarContent('comprehension', language); };
   } else if (currentPillar === 'activities') {
-    const list = rawData.activities;
-    const act = list[idx] || createContinuousPractice('activities', rawData, idx, language) || list[idx % list.length];
+    const words = (rawData.vocab || []).flat();
+    const target = words[idx % words.length] || { word: 'Hello', meaning: 'Greeting' };
+    const options = gameOptions(words.length ? words : [target], target, idx);
+    const gameType = idx % 3;
+    const authored = rawData.activities && rawData.activities[idx % rawData.activities.length];
+    const game = gameType === 0 ? {
+      label: 'PICTURE MATCH', title: 'Match the picture', visual: learningVisual(target),
+      prompt: 'Tap the word that matches this picture.', choices: options, correct: target.word
+    } : gameType === 1 ? {
+      label: 'LISTEN & CHOOSE', title: 'Which word did you hear?', visual: '🎧',
+      prompt: 'Tap Listen, then choose the matching word.', choices: options, correct: target.word, audio: target.word
+    } : {
+      label: 'WORD CHALLENGE', title: authored ? authored.title : 'Quick word challenge', visual: '🧩',
+      prompt: authored ? authored.prompt : `Choose the ${language} word for “${target.meaning}”.`, choices: authored ? authored.options : options, correct: authored ? authored.correct : target.word
+    };
     container.innerHTML = `
-      <h4>🎯 Interactive practice</h4>
-      <p style="font-size:14px; margin:6px 0;"><strong>${act.title}:</strong> ${act.prompt}</p>
-      <div style="display:flex; gap:8px;">${act.options.map(o => `<button class="act-opt secondary" style="padding:8px 14px; font-size:13px;">${o}</button>`).join('')}</div>
-      <p id="actFeedback" class="exercise-feedback"></p>
-      <button id="nextActBtn" type="button" class="btn-executive" style="margin-top:12px; font-size:13px;">Next Activity ➔</button>`;
-    document.querySelectorAll('.act-opt').forEach(btn => btn.onclick = () => {
-      const fb = $('#actFeedback');
-      if (btn.textContent === act.correct) {
+      <div class="game-heading"><div><p class="section-eyebrow">${game.label}</p><h4>🎮 ${game.title}</h4></div><span class="status-pill lime">+10 points</span></div>
+      <div class="game-visual">${game.visual}</div>
+      <p class="game-prompt">${game.prompt}</p>
+      ${game.audio ? '<button id="gameListenBtn" type="button" class="secondary game-listen">🔊 Listen</button>' : ''}
+      <div class="game-options">${game.choices.map(option => `<button class="game-option" type="button" data-game-answer="${option === game.correct ? 'correct' : 'wrong'}">${option}</button>`).join('')}</div>
+      <p id="gameFeedback" class="exercise-feedback"></p>
+      <button id="nextActBtn" type="button" class="btn-executive" style="margin-top:12px; font-size:13px;">Play another game ↻</button>`;
+    if ($('#gameListenBtn')) $('#gameListenBtn').onclick = () => { playSound('click'); speakText(game.audio, language, message => { const feedback = $('#gameFeedback'); if (feedback) { feedback.textContent = message; feedback.style.color = '#52675f'; } }); };
+    document.querySelectorAll('[data-game-answer]').forEach(btn => btn.onclick = () => {
+      const fb = $('#gameFeedback');
+      if (btn.dataset.gameAnswer === 'correct') {
         playSound('success');
-        fb.textContent = 'Excellent activity completion! ✓';
+        fb.textContent = 'Great job! You won this round. ✓ (+10 points)';
         fb.style.color = '#287257';
+        document.querySelectorAll('[data-game-answer]').forEach(option => option.disabled = true);
+        api('/api/practice/submit', { method: 'POST', body: JSON.stringify({ points: 10 }) }).catch(() => {});
       } else {
         playSound('error');
-        fb.textContent = 'Try another option!';
+        fb.textContent = 'Nice try! Look, listen, and choose again.';
         fb.style.color = '#b05d43';
       }
     });

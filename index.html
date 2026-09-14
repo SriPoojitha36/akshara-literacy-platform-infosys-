@@ -100,17 +100,17 @@
         </div>
 
         <section id="assessmentView" class="hidden" aria-live="polite">
-          <div class="form-heading">
+          <div class="form-heading assessment-heading">
             <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-              <div>
-                <p class="eyebrow">YOUR STARTING POINT</p>
-                <h2>Let’s build your learning path</h2>
+              <div class="assessment-title-group">
+                <span class="assessment-compass" aria-hidden="true">🧭</span>
+                <div><p class="eyebrow">STARTING ASSESSMENT</p><h2>Let’s discover your best first step</h2></div>
               </div>
               <button id="assessmentLogout" type="button" class="text-button" style="font-size: 13px; margin-top: 4px;">Sign in with different account</button>
             </div>
-            <p>A few quick questions help us understand your skills and prepare lessons that feel right for you.</p>
+            <p>There are no marks and no pressure. Your answers help Akshara choose comfortable lessons for you.</p>
           </div>
-          <div class="assessment-progress"><span id="assessmentStep">1</span> of <span id="assessmentTotal">9</span> <div><i id="progressFill"></i></div></div>
+          <div class="assessment-progress"><span id="assessmentStep">1</span> of <span id="assessmentTotal">8</span> <div><i id="progressFill"></i></div></div>
           <div id="questionCard" class="question-card"></div>
           <p id="assessmentError" class="error" aria-live="polite"></p>
           <div class="assessment-actions"><button id="backQuestion" class="secondary" type="button">Back</button><button id="nextQuestion" class="primary" type="button">Continue <span>→</span></button></div>
@@ -173,7 +173,7 @@
               <button type="button" data-pillar="comprehension" data-ui="comprehension">Comprehension</button>
               <button type="button" data-pillar="activities" data-ui="practiceActivities">Practice activities</button>
             </div>
-            <button class="nav-tab" data-page="page-lessons">🎓 <span data-ui="microLessons">Micro-Lessons</span></button>
+            <button class="nav-tab" data-page="page-lessons">🧭 <span data-ui="microLessons">My Learning Path</span></button>
             <button class="nav-tab" data-page="page-voice">🎙️ <span data-ui="speechEngine">Speech Engine</span></button>
             <button class="nav-tab" data-page="page-reports">📊 <span data-ui="analyticsBadges">Analytics &amp; Badges</span></button>
           </nav>
@@ -201,6 +201,24 @@
               </div>
               <button class="journey-button" type="button" data-go-page="page-lessons">Begin activity <span>→</span></button>
             </section>
+
+            <div class="home-tools-grid">
+              <section class="dash-section today-plan-card">
+                <div class="section-header"><div><p class="section-eyebrow">TODAY'S PLAN</p><h3>Three small steps</h3></div><span class="status-pill lime">Easy start</span></div>
+                <p class="feature-helper">Choose one activity now. You can return whenever you are ready.</p>
+                <div class="today-plan-list">
+                  <button type="button" data-go-page="page-lessons"><span>1</span><div><strong>Learn one letter or word</strong><small>Guided micro-lesson</small></div><b>→</b></button>
+                  <button type="button" data-go-page="page-curriculum" data-open-pillar="vocab"><span>2</span><div><strong>Try a quick word activity</strong><small>Vocabulary practice</small></div><b>→</b></button>
+                  <button type="button" data-go-page="page-voice"><span>3</span><div><strong>Listen and say a phrase</strong><small>Speech practice</small></div><b>→</b></button>
+                </div>
+              </section>
+              <section class="dash-section word-of-day-card">
+                <div class="section-header"><div><p class="section-eyebrow">WORD OF THE DAY</p><h3>Listen. Say. Remember.</h3></div><span id="dailyWordLanguage" class="status-pill green">English</span></div>
+                <div class="daily-word-content"><span id="dailyWordIcon" aria-hidden="true">👋</span><div><strong id="dailyWordText">Hello</strong><p id="dailyWordMeaning">A friendly greeting</p></div></div>
+                <div class="daily-word-actions"><button id="playDailyWord" type="button">🔊 Listen</button><button id="nextDailyWord" type="button">New word ↻</button></div>
+                <p id="dailyWordStatus" class="daily-word-status" aria-live="polite"></p>
+              </section>
+            </div>
 
             <div class="stats-overview-grid">
               <div class="stat-card gold">
@@ -338,8 +356,8 @@
           <!-- TAB PAGE 3: MICRO-LESSONS & TIMELINE -->
           <div id="page-lessons" class="dash-page">
             <header class="page-intro">
-              <div><p class="page-kicker">FIRST STEPS</p><h3>Learn from what you already know</h3><p>We begin with familiar pictures, sounds, and speaking. Letters come later, when you feel ready.</p></div>
-              <span class="page-step">Gentle learning</span>
+              <div><p class="page-kicker">MY LEARNING PATH</p><h3>Your lessons, one small step at a time</h3><p>Begin with familiar pictures and sounds, then explore letters and simple words when you feel ready.</p></div>
+              <span class="page-step">Your next steps</span>
             </header>
             <section class="dash-section beginner-lesson-section">
               <div class="section-header">

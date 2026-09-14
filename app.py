@@ -387,7 +387,7 @@ def profile(learner):
 @current_learner
 def submit_assessment(learner):
     data = request.get_json(silent=True) or {}
-    required = {"focus", "reading", "writing", "confidence", "daily_time", "reading_check", "writing_check", "comprehension_check"}
+    required = {"focus", "reading", "writing", "confidence", "reading_check", "writing_check", "comprehension_check"}
     if not required.issubset(data) or any(not str(data[key]).strip() for key in required):
         return jsonify(error="Please answer every assessment question."), 400
     expected_greeting = LANGUAGE_GREETINGS.get(learner["language"], LANGUAGE_GREETINGS["English"])
@@ -430,8 +430,12 @@ def course_topics(course_id):
     return jsonify(topics=serialize_rows(rows))
 
 @app.get("/api/topics/<int:topic_id>/lessons")
-def topic_lessons(topic_id):
-    rows = get_db().execute("SELECT id,title,content,sequence_no,estimated_minutes FROM lessons WHERE topic_id=? ORDER BY sequence_no", (topic_id,)).fetchall()
+@current_learner
+def topic_lessons(learner, topic_id):
+    rows = get_db().execute("""SELECT lessons.id,lessons.title,lessons.content,lessons.sequence_no,lessons.estimated_minutes,
+        COALESCE(learning_progress.completion_percent, 0) AS completion_percent
+        FROM lessons LEFT JOIN learning_progress ON learning_progress.lesson_id=lessons.id AND learning_progress.learner_id=?
+        WHERE lessons.topic_id=? ORDER BY lessons.sequence_no""", (learner["id"], topic_id)).fetchall()
     return jsonify(lessons=serialize_rows(rows))
 
 @app.get("/api/assessments/<int:assessment_id>")
