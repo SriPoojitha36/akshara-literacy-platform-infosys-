@@ -1,0 +1,11 @@
+const $ = selector => document.querySelector(selector);
+let users = [];
+async function api(url, options = {}) { const response = await fetch(url, { headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }, ...options }); const data = response.status === 204 ? {} : await response.json().catch(() => ({})); if (!response.ok) throw new Error(data.error || 'Unable to complete this request.'); return data; }
+function renderUsers() { const query = $('#userSearch').value.trim().toLowerCase(); const rows = users.filter(user => [user.name, user.email, user.language, user.proficiency, user.goal].some(value => String(value).toLowerCase().includes(query))); $('#userRows').innerHTML = rows.map(user => `<tr><td><strong>${user.name}</strong><small>${user.email}</small></td><td>${user.language}</td><td><span class="tag">${user.proficiency}</span></td><td>${user.goal}</td><td><div class="progress"><i><b style="width:${user.progress_percent}%"></b></i><span>${user.progress_percent}%</span></div></td><td>${user.total_xp}</td><td>${user.login_count}</td></tr>`).join(''); $('#emptyUsers').classList.toggle('hidden', rows.length !== 0); }
+async function loadUsers() { users = (await api('/api/admin/users')).users; renderUsers(); }
+function reveal(email) { $('#adminEmail').textContent = email; $('#adminLogin').classList.add('hidden'); $('#adminDashboard').classList.remove('hidden'); }
+$('#adminLoginForm').addEventListener('submit', async event => { event.preventDefault(); const form = new FormData(event.currentTarget); try { const data = await api('/api/admin/login', { method: 'POST', body: JSON.stringify({ email: form.get('email'), password: form.get('password') }) }); reveal(data.admin.email); await loadUsers(); } catch (error) { $('#loginError').textContent = error.message; } });
+$('#userSearch').addEventListener('input', renderUsers);
+$('#refreshUsers').addEventListener('click', () => loadUsers().catch(error => alert(error.message)));
+$('#adminLogout').addEventListener('click', async () => { try { await api('/api/admin/logout', { method: 'POST' }); } catch (error) {} location.reload(); });
+api('/api/admin/session').then(async session => { if (session.authenticated) { reveal(session.admin.email); await loadUsers(); } }).catch(() => {});

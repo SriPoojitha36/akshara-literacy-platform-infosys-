@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Akshara | Curriculum Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/admin.css" />
+  </head>
+  <body>
+    <main class="admin-shell">
+      <section id="adminLogin" class="login-card">
+        <p class="eyebrow">AKSHARA PLATFORM</p><h1>Curriculum manager</h1>
+        <p>Sign in as an administrator to manage courses, topics, and lessons.</p>
+        <form id="adminLoginForm"><label>Email address<input type="email" name="email" autocomplete="username" required /></label><label>Password<input type="password" name="password" autocomplete="current-password" required /></label><p id="loginError" class="error" aria-live="polite"></p><button type="submit">Sign in as administrator →</button></form>
+        <a href="/">← Back to learning home</a>
+      </section>
+
+      <section id="adminDashboard" class="hidden"><div class="admin-workspace">
+        <aside class="admin-side-nav" aria-label="Administrator navigation"><div class="admin-side-brand"><span>अ</span><div><b>akshara</b><small>ADMIN PORTAL</small></div></div><p class="eyebrow">WORKSPACE</p><a class="admin-side-link" href="/admin"><span class="side-icon">▦</span><span>Overview</span></a><a class="admin-side-link" href="/admin/activity"><span class="side-icon">◷</span><span>Activity</span></a><a class="admin-side-link" href="/admin/users"><span class="side-icon">◉</span><span>Users</span></a><a class="admin-side-link active" href="/admin/curriculum"><span class="side-icon">▤</span><span>Content</span></a><p class="side-note">Create courses, topics, and lessons for each learning language.</p></aside>
+        <div class="admin-page-content">
+        <header class="admin-header"><div><p class="eyebrow">CURRICULUM MANAGEMENT</p><h1>Build the learning library</h1><p>Create courses, topics, and lessons for each learning language.</p></div><div class="header-actions"><span id="adminEmail"></span><button id="refreshCurriculum" class="quiet">↻ Refresh</button><button id="adminLogout" class="danger">Logout</button></div></header>
+        <section class="curriculum-manager">
+          <div class="panel curriculum-summary"><div><p class="eyebrow">CONTENT LIBRARY</p><h2>Learning content at a glance</h2><p>Publish structured, level-appropriate literacy lessons.</p></div><div class="curriculum-counts"><span><b id="totalCourses">0</b> Courses</span><span><b id="totalTopics">0</b> Topics</span><span><b id="totalLessonsLibrary">0</b> Lessons</span></div></div>
+          <div class="curriculum-forms">
+            <form id="addCourseForm" class="panel admin-form"><div><p class="eyebrow">STEP 1</p><h2>Add a course</h2></div><label>Learning language<select id="courseLanguage" name="language_id" required></select></label><label>Course title<input name="title" placeholder="Example: Everyday reading" required /></label><label>Level<select name="proficiency_level"><option>Beginner</option><option>Elementary</option><option>Intermediate</option><option>Advanced</option></select></label><label>Short description<textarea name="description" placeholder="What will learners gain from this course?"></textarea></label><p id="courseMessage" class="form-message" aria-live="polite"></p><button type="submit">Add course</button></form>
+            <form id="addLessonForm" class="panel admin-form"><div><p class="eyebrow">STEP 2</p><h2>Add a lesson</h2></div><label>Course<select id="lessonCourse" name="course_id" required></select></label><label>Existing topic (optional)<select id="lessonTopic" name="topic_id"><option value="">Create a new topic below</option></select></label><label>New topic name (only if needed)<input name="topic_title" placeholder="Example: Greetings" /></label><label>Lesson title<input name="title" placeholder="Example: Saying hello" required /></label><label>Lesson content<textarea name="content" placeholder="Add instructions, words, or activity text for this lesson."></textarea></label><label>Estimated minutes<input name="estimated_minutes" type="number" min="1" max="180" value="5" required /></label><p id="lessonMessage" class="form-message" aria-live="polite"></p><button type="submit">Publish lesson</button></form>
+          </div>
+          <article class="panel recent-lessons-panel"><div class="panel-heading"><div><p class="eyebrow">LATEST CONTENT</p><h2>Recently added lessons</h2></div></div><div id="recentLessons" class="recent-lessons"></div></article>
+        </section>
+        </div></div></section>
+    </main>
+    <script src="/admin_curriculum.js"></script>
+  </body>
+</html>

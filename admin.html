@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Akshara | Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/admin.css" />
+  </head>
+  <body>
+    <main class="admin-shell">
+      <section id="adminLogin" class="login-card">
+        <p class="eyebrow">AKSHARA PLATFORM</p>
+        <h1>Admin dashboard</h1>
+        <p>Monitor learners, assessments, lesson progress, and practice activity.</p>
+        <form id="adminLoginForm">
+          <label>Email address<input type="email" name="email" autocomplete="username" required /></label>
+          <label>Password<input type="password" name="password" autocomplete="current-password" required /></label>
+          <p id="loginError" class="error" aria-live="polite"></p>
+          <button type="submit">Sign in as administrator →</button>
+        </form>
+        <a href="/">← Back to learning home</a>
+      </section>
+
+      <section id="adminDashboard" class="hidden"><div class="admin-workspace">
+        <aside class="admin-side-nav" aria-label="Administrator navigation"><div class="admin-side-brand"><span>अ</span><div><b>akshara</b><small>ADMIN PORTAL</small></div></div><p class="eyebrow">WORKSPACE</p><a class="admin-side-link active" href="/admin"><span class="side-icon">▦</span><span>Overview</span></a><a class="admin-side-link" href="/admin/activity"><span class="side-icon">◷</span><span>Activity</span></a><a class="admin-side-link" href="/admin/users"><span class="side-icon">◉</span><span>Users</span></a><a class="admin-side-link" href="/admin/curriculum"><span class="side-icon">▤</span><span>Content</span></a><p class="side-note">Manage learning content and monitor platform activity from one secure place.</p></aside>
+        <div class="admin-page-content">
+        <header class="admin-header">
+          <div><p class="eyebrow">PLATFORM MANAGEMENT</p><h1>Akshara admin dashboard</h1><p>Clear, privacy-conscious overview of the learning platform.</p></div>
+          <div class="header-actions"><span id="adminEmail"></span><button id="refreshDashboard" class="quiet">↻ Refresh</button><button id="adminLogout" class="danger">Logout</button></div>
+        </header>
+        <section class="metric-grid" aria-label="Platform statistics">
+          <article><span>👥</span><p>Total learners</p><strong id="totalLearners">0</strong></article>
+          <article><span>🧭</span><p>Assessments completed</p><strong id="totalAssessments">0</strong></article>
+          <article><span>📚</span><p>Lessons completed</p><strong id="totalLessons">0</strong></article>
+          <article><span>✨</span><p>Practice attempts</p><strong id="totalPractice">0</strong></article>
+        </section>
+        <section class="insights-grid">
+          <article class="panel"><h2>Learners by learning language</h2><div id="languageBreakdown" class="breakdown"></div></article>
+          <article class="panel"><h2>Learners by current level</h2><div id="levelBreakdown" class="breakdown"></div></article>
+        </section>
+        <section class="panel learner-panel">
+          <div class="panel-heading"><div><h2>Learner directory</h2><p>View learning progress without displaying passwords or assessment responses.</p></div><input id="learnerSearch" type="search" placeholder="Search name, email, or language" /></div>
+          <div class="table-wrap"><table><thead><tr><th>Learner</th><th>Language</th><th>Level</th><th>Assessment</th><th>Lesson progress</th><th>XP</th><th>Logins</th></tr></thead><tbody id="learnerRows"></tbody></table></div>
+          <p id="emptyState" class="empty hidden">No learners match this search.</p>
+        </section>
+        </div></div></section>
+    </main>
+    <script src="/admin.js"></script>
+  </body>
+</html>

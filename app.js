@@ -544,6 +544,10 @@ document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () =>
 if ($('#createLink')) $('#createLink').addEventListener('click', () => { playSound('click'); setMode('register'); });
 if ($('#welcomeGetStarted')) $('#welcomeGetStarted').addEventListener('click', () => { playSound('click'); openAuth('register'); });
 if ($('#welcomeSignIn')) $('#welcomeSignIn').addEventListener('click', () => { playSound('click'); openAuth('login'); });
+document.querySelectorAll('[data-auth-mode]').forEach(button => button.addEventListener('click', () => {
+  playSound('click');
+  openAuth(button.dataset.authMode === 'login' ? 'login' : 'register');
+}));
 if ($('#brandHome')) $('#brandHome').addEventListener('click', (event) => { event.preventDefault(); showPublicHome(); });
 
 let pendingSocialProvider = null;
@@ -1035,15 +1039,124 @@ if ($('#dashLangSelect')) {
 // Learning content remains in dashLangSelect; this dictionary translates the
 // persistent navigation so a learner can use the portal comfortably.
 const interfaceCopy = {
-  English: { portalLabel: 'AKSHARA', workspaceLabel: 'My learning home', overview: 'Home', learningStructure: 'Learning Structure', microLessons: 'My Learning Path', speechEngine: 'Speech Engine', analyticsBadges: 'Analytics & Badges', reading: 'Reading', writing: 'Writing', vocabulary: 'Vocabulary', comprehension: 'Comprehension', practiceActivities: 'Practice activities' },
-  Hindi: { portalLabel: 'अक्षरा', workspaceLabel: 'मेरा सीखने का घर', overview: 'होम', learningStructure: 'सीखने की संरचना', microLessons: 'मेरा सीखने का पथ', speechEngine: 'भाषण अभ्यास', analyticsBadges: 'विश्लेषण और बैज', reading: 'पठन', writing: 'लेखन', vocabulary: 'शब्दावली', comprehension: 'समझ', practiceActivities: 'अभ्यास गतिविधियाँ' },
-  Telugu: { portalLabel: 'అక్షర', workspaceLabel: 'నా అభ్యాస నిలయం', overview: 'హోమ్', learningStructure: 'అభ్యాస నిర్మాణం', microLessons: 'నా అభ్యాస మార్గం', speechEngine: 'స్పీచ్ అభ్యాసం', analyticsBadges: 'విశ్లేషణ & బ్యాడ్జ్‌లు', reading: 'చదవడం', writing: 'రాయడం', vocabulary: 'పదజాలం', comprehension: 'అవగాహన', practiceActivities: 'అభ్యాస కార్యకలాపాలు' },
-  Tamil: { portalLabel: 'அக்ஷரா', workspaceLabel: 'என் கற்றல் முகப்பு', overview: 'முகப்பு', learningStructure: 'கற்றல் அமைப்பு', microLessons: 'என் கற்றல் பாதை', speechEngine: 'பேச்சுப் பயிற்சி', analyticsBadges: 'பகுப்பாய்வு & பதக்கங்கள்', reading: 'வாசித்தல்', writing: 'எழுதுதல்', vocabulary: 'சொற்களஞ்சியம்', comprehension: 'புரிதல்', practiceActivities: 'பயிற்சி செயல்கள்' },
-  Kannada: { portalLabel: 'ಅಕ್ಷರ', workspaceLabel: 'ನನ್ನ ಕಲಿಕೆ ಮುಖಪುಟ', overview: 'ಮುಖಪುಟ', learningStructure: 'ಕಲಿಕೆ ರಚನೆ', microLessons: 'ನನ್ನ ಕಲಿಕೆ ಪಥ', speechEngine: 'ಮಾತಿನ ಅಭ್ಯಾಸ', analyticsBadges: 'ವಿಶ್ಲೇಷಣೆ ಮತ್ತು ಬ್ಯಾಡ್ಜ್‌ಗಳು', reading: 'ಓದುವುದು', writing: 'ಬರೆಯುವುದು', vocabulary: 'ಪದಕೋಶ', comprehension: 'ತಿಳುವಳಿಕೆ', practiceActivities: 'ಅಭ್ಯಾಸ ಚಟುವಟಿಕೆಗಳು' }
+  English: { portalLabel: 'AKSHARA', workspaceLabel: 'My learning home', overview: 'Home', learningStructure: 'Learning Structure', microLessons: 'My Learning Path', challengesGames: 'Challenges & Games', quizzes: 'Quizzes', speechEngine: 'Speech Engine', analyticsBadges: 'Analytics & Badges', reading: 'Reading', writing: 'Writing', vocabulary: 'Vocabulary', comprehension: 'Comprehension', practiceActivities: 'Practice activities' },
+  Hindi: { portalLabel: 'अक्षरा', workspaceLabel: 'मेरा सीखने का घर', overview: 'होम', learningStructure: 'सीखने की संरचना', microLessons: 'मेरा सीखने का पथ', challengesGames: 'चुनौतियाँ और खेल', quizzes: 'प्रश्नोत्तरी', speechEngine: 'भाषण अभ्यास', analyticsBadges: 'विश्लेषण और बैज', reading: 'पठन', writing: 'लेखन', vocabulary: 'शब्दावली', comprehension: 'समझ', practiceActivities: 'अभ्यास गतिविधियाँ' },
+  Telugu: { portalLabel: 'అక్షర', workspaceLabel: 'నా అభ్యాస నిలయం', overview: 'హోమ్', learningStructure: 'అభ్యాస నిర్మాణం', microLessons: 'నా అభ్యాస మార్గం', challengesGames: 'సవాళ్లు మరియు ఆటలు', quizzes: 'క్విజ్‌లు', speechEngine: 'స్పీచ్ అభ్యాసం', analyticsBadges: 'విశ్లేషణ & బ్యాడ్జ్‌లు', reading: 'చదవడం', writing: 'రాయడం', vocabulary: 'పదజాలం', comprehension: 'అవగాహన', practiceActivities: 'అభ్యాస కార్యకలాపాలు' },
+  Tamil: { portalLabel: 'அக்ஷரா', workspaceLabel: 'என் கற்றல் முகப்பு', overview: 'முகப்பு', learningStructure: 'கற்றல் அமைப்பு', microLessons: 'என் கற்றல் பாதை', challengesGames: 'சவால்கள் மற்றும் விளையாட்டுகள்', quizzes: 'வினாடி வினாக்கள்', speechEngine: 'பேச்சுப் பயிற்சி', analyticsBadges: 'பகுப்பாய்வு & பதக்கங்கள்', reading: 'வாசித்தல்', writing: 'எழுதுதல்', vocabulary: 'சொற்களஞ்சியம்', comprehension: 'புரிதல்', practiceActivities: 'பயிற்சி செயல்கள்' },
+  Kannada: { portalLabel: 'ಅಕ್ಷರ', workspaceLabel: 'ನನ್ನ ಕಲಿಕೆ ಮುಖಪುಟ', overview: 'ಮುಖಪುಟ', learningStructure: 'ಕಲಿಕೆ ರಚನೆ', microLessons: 'ನನ್ನ ಕಲಿಕೆ ಪಥ', challengesGames: 'ಸವಾಲುಗಳು ಮತ್ತು ಆಟಗಳು', quizzes: 'ಪ್ರಶ್ನೋತ್ತರಗಳು', speechEngine: 'ಮಾತಿನ ಅಭ್ಯಾಸ', analyticsBadges: 'ವಿಶ್ಲೇಷಣೆ ಮತ್ತು ಬ್ಯಾಡ್ಜ್‌ಗಳು', reading: 'ಓದುವುದು', writing: 'ಬರೆಯುವುದು', vocabulary: 'ಪದಕೋಶ', comprehension: 'ತಿಳುವಳಿಕೆ', practiceActivities: 'ಅಭ್ಯಾಸ ಚಟುವಟಿಕೆಗಳು' }
 };
 
+// Main dashboard controls and page headings. Learning content intentionally
+// remains in the learner's chosen learning language.
+const interfaceExtraCopy = {
+  English: { learningLanguage: 'Learning language', interfaceLanguage: 'Interface language', shuffleQuestions: 'Shuffle Questions', certificate: 'Certificate', theme: 'Theme', profile: 'My profile', logout: 'Logout', welcomeHome: 'WELCOME HOME', homeQuestion: 'What would you like to learn today?', homeExplain: 'Choose one small activity. Akshara will guide you step by step, at your own pace.', startNext: 'Start my next lesson', beginActivity: 'Begin activity', todayPlan: "TODAY'S PLAN", smallSteps: 'Three small steps', easyStart: 'Easy start', wordDay: 'WORD OF THE DAY', listenSayRemember: 'Listen. Say. Remember.', listen: 'Listen', newWord: 'New word', practiceBySkill: 'PRACTISE BY SKILL', buildLiteracy: 'Build literacy one skill at a time', skillExplain: 'Choose a pillar and work through short, supportive activities at your own pace.', skillPractice: 'Skill practice', myPath: 'MY LEARNING PATH', pathTitle: 'Your lessons, one small step at a time', pathExplain: 'Begin with familiar pictures and sounds, then explore letters and simple words when you feel ready.', nextSteps: 'Your next steps', speakConfidence: 'SPEAK WITH CONFIDENCE', voiceTitle: 'Listen, repeat, and improve', voiceExplain: 'Use your microphone to receive feedback on the phrase you practised.', voicePractice: 'Voice practice' },
+  Hindi: { learningLanguage: 'सीखने की भाषा', interfaceLanguage: 'इंटरफ़ेस भाषा', shuffleQuestions: 'प्रश्न बदलें', certificate: 'प्रमाणपत्र', theme: 'थीम', profile: 'मेरी प्रोफ़ाइल', logout: 'लॉग आउट', welcomeHome: 'होम में आपका स्वागत है', homeQuestion: 'आज आप क्या सीखना चाहेंगे?', homeExplain: 'एक छोटी गतिविधि चुनें। अक्षरा आपको अपनी गति से चरण-दर-चरण सिखाएगा।', startNext: 'अगला पाठ शुरू करें', beginActivity: 'गतिविधि शुरू करें', todayPlan: 'आज की योजना', smallSteps: 'तीन छोटे कदम', easyStart: 'आसान शुरुआत', wordDay: 'आज का शब्द', listenSayRemember: 'सुनें। बोलें। याद रखें।', listen: 'सुनें', newWord: 'नया शब्द', practiceBySkill: 'कौशल के अनुसार अभ्यास', buildLiteracy: 'एक समय में एक कौशल सीखें', skillExplain: 'अपनी गति से छोटे और सहायक अभ्यास चुनें।', skillPractice: 'कौशल अभ्यास', myPath: 'मेरा सीखने का पथ', pathTitle: 'आपके पाठ, एक-एक छोटे कदम में', pathExplain: 'परिचित चित्रों और ध्वनियों से शुरू करें, फिर अक्षर और सरल शब्द सीखें।', nextSteps: 'आपके अगले कदम', speakConfidence: 'आत्मविश्वास से बोलें', voiceTitle: 'सुनें, दोहराएं और सुधारें', voiceExplain: 'जिस वाक्य का अभ्यास किया है उस पर प्रतिक्रिया पाने के लिए माइक्रोफ़ोन का उपयोग करें।', voicePractice: 'बोलने का अभ्यास' },
+  Telugu: { learningLanguage: 'నేర్చుకునే భాష', interfaceLanguage: 'ఇంటర్‌ఫేస్ భాష', shuffleQuestions: 'ప్రశ్నలను మార్చండి', certificate: 'సర్టిఫికేట్', theme: 'థీమ్', profile: 'నా ప్రొఫైల్', logout: 'లాగ్ అవుట్', welcomeHome: 'హోమ్‌కు స్వాగతం', homeQuestion: 'ఈ రోజు మీరు ఏమి నేర్చుకోవాలనుకుంటున్నారు?', homeExplain: 'ఒక చిన్న కార్యకలాపాన్ని ఎంచుకోండి. అక్షర మిమ్మల్ని మీ వేగంతో దశలవారీగా నేర్పుతుంది.', startNext: 'తదుపరి పాఠాన్ని ప్రారంభించండి', beginActivity: 'కార్యకలాపం ప్రారంభించండి', todayPlan: 'నేటి ప్రణాళిక', smallSteps: 'మూడు చిన్న అడుగులు', easyStart: 'సులభమైన ప్రారంభం', wordDay: 'నేటి పదం', listenSayRemember: 'వినండి. చెప్పండి. గుర్తుంచుకోండి.', listen: 'వినండి', newWord: 'కొత్త పదం', practiceBySkill: 'నైపుణ్యాన్ని బట్టి అభ్యాసం', buildLiteracy: 'ఒకేసారి ఒక నైపుణ్యాన్ని నేర్చుకోండి', skillExplain: 'మీ వేగంతో చిన్న సహాయక కార్యకలాపాలను ఎంచుకోండి.', skillPractice: 'నైపుణ్య అభ్యాసం', myPath: 'నా అభ్యాస మార్గం', pathTitle: 'మీ పాఠాలు, ఒకేసారి ఒక చిన్న అడుగు', pathExplain: 'తెలిసిన చిత్రాలు మరియు శబ్దాలతో ప్రారంభించి, అక్షరాలు మరియు సరళమైన పదాలను నేర్చుకోండి.', nextSteps: 'మీ తదుపరి అడుగులు', speakConfidence: 'ఆత్మవిశ్వాసంతో మాట్లాడండి', voiceTitle: 'వినండి, పునరావృతం చేయండి మరియు మెరుగుపరచండి', voiceExplain: 'మీరు అభ్యసించిన వాక్యంపై అభిప్రాయం కోసం మైక్రోఫోన్ ఉపయోగించండి.', voicePractice: 'మాట్లాడే అభ్యాసం' },
+  Tamil: { learningLanguage: 'கற்கும் மொழி', interfaceLanguage: 'இடைமுக மொழி', shuffleQuestions: 'கேள்விகளை மாற்று', certificate: 'சான்றிதழ்', theme: 'தீம்', profile: 'என் சுயவிவரம்', logout: 'வெளியேறு', welcomeHome: 'முகப்பிற்கு வரவேற்கிறோம்', homeQuestion: 'இன்று நீங்கள் என்ன கற்க விரும்புகிறீர்கள்?', homeExplain: 'ஒரு சிறிய செயல்பாட்டைத் தேர்ந்தெடுக்கவும். அக்ஷரா உங்கள் வேகத்தில் படிப்படியாக வழிகாட்டும்.', startNext: 'அடுத்த பாடத்தைத் தொடங்கு', beginActivity: 'செயல்பாட்டைத் தொடங்கு', todayPlan: 'இன்றைய திட்டம்', smallSteps: 'மூன்று சிறிய படிகள்', easyStart: 'எளிய தொடக்கம்', wordDay: 'இன்றைய சொல்', listenSayRemember: 'கேளுங்கள். சொல்லுங்கள். நினைவில் கொள்ளுங்கள்.', listen: 'கேளுங்கள்', newWord: 'புதிய சொல்', practiceBySkill: 'திறன் அடிப்படையிலான பயிற்சி', buildLiteracy: 'ஒரு நேரத்தில் ஒரு திறனைக் கற்கவும்', skillExplain: 'உங்கள் வேகத்தில் சிறிய உதவும் செயல்பாடுகளைத் தேர்ந்தெடுக்கவும்.', skillPractice: 'திறன் பயிற்சி', myPath: 'என் கற்றல் பாதை', pathTitle: 'உங்கள் பாடங்கள், ஒரு சிறிய படி வீதம்', pathExplain: 'பரிச்சயமான படங்கள் மற்றும் ஒலிகளுடன் தொடங்கி, எழுத்துகளையும் எளிய சொற்களையும் கற்கவும்.', nextSteps: 'உங்கள் அடுத்த படிகள்', speakConfidence: 'நம்பிக்கையுடன் பேசுங்கள்', voiceTitle: 'கேளுங்கள், மீண்டும் சொல்லுங்கள், மேம்படுத்துங்கள்', voiceExplain: 'நீங்கள் பயிற்சி செய்த சொற்றொடருக்கான கருத்தைப் பெற மைக்ரோஃபோனைப் பயன்படுத்தவும்.', voicePractice: 'பேச்சுப் பயிற்சி' },
+  Kannada: { learningLanguage: 'ಕಲಿಕೆಯ ಭಾಷೆ', interfaceLanguage: 'ಇಂಟರ್‌ಫೇಸ್ ಭಾಷೆ', shuffleQuestions: 'ಪ್ರಶ್ನೆಗಳನ್ನು ಬದಲಿಸಿ', certificate: 'ಪ್ರಮಾಣಪತ್ರ', theme: 'ಥೀಮ್', profile: 'ನನ್ನ ಪ್ರೊಫೈಲ್', logout: 'ಲಾಗ್ ಔಟ್', welcomeHome: 'ಮುಖಪುಟಕ್ಕೆ ಸ್ವಾಗತ', homeQuestion: 'ಇಂದು ನೀವು ಏನು ಕಲಿಯಲು ಬಯಸುತ್ತೀರಿ?', homeExplain: 'ಒಂದು ಸಣ್ಣ ಚಟುವಟಿಕೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಅಕ್ಷರವು ನಿಮ್ಮ ವೇಗದಲ್ಲಿ ಹಂತ ಹಂತವಾಗಿ ಮಾರ್ಗದರ್ಶನ ನೀಡುತ್ತದೆ.', startNext: 'ಮುಂದಿನ ಪಾಠ ಆರಂಭಿಸಿ', beginActivity: 'ಚಟುವಟಿಕೆ ಆರಂಭಿಸಿ', todayPlan: 'ಇಂದಿನ ಯೋಜನೆ', smallSteps: 'ಮೂರು ಸಣ್ಣ ಹೆಜ್ಜೆಗಳು', easyStart: 'ಸುಲಭ ಆರಂಭ', wordDay: 'ಇಂದಿನ ಪದ', listenSayRemember: 'ಆಲಿಸಿ. ಹೇಳಿ. ನೆನಪಿಡಿ.', listen: 'ಆಲಿಸಿ', newWord: 'ಹೊಸ ಪದ', practiceBySkill: 'ಕೌಶಲ್ಯದ ಮೂಲಕ ಅಭ್ಯಾಸ', buildLiteracy: 'ಒಮ್ಮೆಗೆ ಒಂದು ಕೌಶಲ್ಯ ಕಲಿಯಿರಿ', skillExplain: 'ನಿಮ್ಮ ವೇಗದಲ್ಲಿ ಸಣ್ಣ ಸಹಾಯಕ ಚಟುವಟಿಕೆಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ.', skillPractice: 'ಕೌಶಲ್ಯ ಅಭ್ಯಾಸ', myPath: 'ನನ್ನ ಕಲಿಕೆ ಪಥ', pathTitle: 'ನಿಮ್ಮ ಪಾಠಗಳು, ಒಂದೊಂದೇ ಸಣ್ಣ ಹೆಜ್ಜೆ', pathExplain: 'ಪರಿಚಿತ ಚಿತ್ರಗಳು ಮತ್ತು ಧ್ವನಿಗಳಿಂದ ಆರಂಭಿಸಿ, ನಂತರ ಅಕ್ಷರಗಳು ಮತ್ತು ಸರಳ ಪದಗಳನ್ನು ಕಲಿಯಿರಿ.', nextSteps: 'ನಿಮ್ಮ ಮುಂದಿನ ಹೆಜ್ಜೆಗಳು', speakConfidence: 'ಆತ್ಮವಿಶ್ವಾಸದಿಂದ ಮಾತನಾಡಿ', voiceTitle: 'ಆಲಿಸಿ, ಪುನರಾವರ್ತಿಸಿ ಮತ್ತು ಸುಧಾರಿಸಿ', voiceExplain: 'ನೀವು ಅಭ್ಯಾಸ ಮಾಡಿದ ವಾಕ್ಯದ ಪ್ರತಿಕ್ರಿಯೆಗಾಗಿ ಮೈಕ್ರೊಫೋನ್ ಬಳಸಿ.', voicePractice: 'ಮಾತಿನ ಅಭ್ಯಾಸ' }
+};
+
+const interfaceSectionCopy = {
+  English: { coreCurriculum: 'CORE CURRICULUM', learningContent: 'Learning Content Structure', pillarsActive: '5 Pillars Active', pillarHelper: 'Select a learning pillar to practise with instant feedback. Use Next anytime for continuous, fresh practice.', firstStep: 'TODAY’S FIRST STEP', seeHearSay: 'See it. Hear it. Say it.', noReading: 'No reading needed', whenReady: 'WHEN YOU FEEL READY', nextPath: 'Your next learning path', smartLab: 'SMART LESSON LAB', personalLesson: 'A lesson made for you', adaptive: 'Adaptive', gameLearning: 'GAMIFIED LEARNING', practiceCorner: 'Practice Corner (Dynamic Session Pool)', aiSpeech: 'AI SPEECH ENGINE', voiceCoach: 'Voice Learning & Pronunciation Coach', trackGrowth: 'TRACK YOUR GROWTH', learningProgress: 'Your learning progress', reportHelp: 'Review completed lessons, voice practice, and the badges you have earned.', viewCertificate: 'View certificate', performanceReport: 'Learner Performance & Progress Report', unlockedBadges: 'Unlocked Achievement Badges', badgesTrophies: 'Badges & Trophies' },
+  Hindi: { coreCurriculum: 'मुख्य पाठ्यक्रम', learningContent: 'सीखने की सामग्री संरचना', pillarsActive: '5 कौशल सक्रिय', firstStep: 'आज का पहला कदम', seeHearSay: 'देखें। सुनें। बोलें।', noReading: 'पढ़ना जरूरी नहीं', whenReady: 'जब आप तैयार हों', nextPath: 'आपका अगला सीखने का पथ', smartLab: 'स्मार्ट पाठ प्रयोगशाला', personalLesson: 'आपके लिए बना पाठ', adaptive: 'अनुकूलित', gameLearning: 'खेल-आधारित सीखना', practiceCorner: 'अभ्यास कोना', aiSpeech: 'एआई स्पीच इंजन', voiceCoach: 'वॉइस लर्निंग और उच्चारण कोच', trackGrowth: 'अपनी प्रगति देखें', learningProgress: 'आपकी सीखने की प्रगति', reportHelp: 'पूरे पाठ, वॉइस अभ्यास और अर्जित बैज देखें।', viewCertificate: 'प्रमाणपत्र देखें', performanceReport: 'सीखने के प्रदर्शन और प्रगति की रिपोर्ट', unlockedBadges: 'अनलॉक किए गए उपलब्धि बैज', badgesTrophies: 'बैज और ट्रॉफियां' },
+  Telugu: { coreCurriculum: 'ప్రధాన పాఠ్యక్రమం', learningContent: 'అభ్యాస కంటెంట్ నిర్మాణం', pillarsActive: '5 నైపుణ్యాలు సక్రియం', firstStep: 'నేటి మొదటి అడుగు', seeHearSay: 'చూడండి. వినండి. చెప్పండి.', noReading: 'చదవాల్సిన అవసరం లేదు', whenReady: 'మీరు సిద్ధంగా ఉన్నప్పుడు', nextPath: 'మీ తదుపరి అభ్యాస మార్గం', smartLab: 'స్మార్ట్ పాఠ ప్రయోగశాల', personalLesson: 'మీ కోసం రూపొందించిన పాఠం', adaptive: 'అనుకూలమైనది', gameLearning: 'ఆటల ద్వారా అభ్యాసం', practiceCorner: 'అభ్యాస మూల', aiSpeech: 'ఏఐ స్పీచ్ ఇంజిన్', voiceCoach: 'వాయిస్ అభ్యాసం మరియు ఉచ్చారణ కోచ్', trackGrowth: 'మీ ఎదుగుదలను గమనించండి', learningProgress: 'మీ అభ్యాస పురోగతి', reportHelp: 'పూర్తయిన పాఠాలు, వాయిస్ అభ్యాసం మరియు మీ బ్యాడ్జ్‌లను చూడండి.', viewCertificate: 'సర్టిఫికేట్ చూడండి', performanceReport: 'అభ్యాస పనితీరు మరియు పురోగతి నివేదిక', unlockedBadges: 'అన్‌లాక్ చేసిన సాధన బ్యాడ్జ్‌లు', badgesTrophies: 'బ్యాడ్జ్‌లు మరియు ట్రోఫీలు' },
+  Tamil: { coreCurriculum: 'முக்கிய பாடத்திட்டம்', learningContent: 'கற்றல் உள்ளடக்க அமைப்பு', pillarsActive: '5 திறன்கள் செயல்பாட்டில்', firstStep: 'இன்றைய முதல் படி', seeHearSay: 'பாருங்கள். கேளுங்கள். சொல்லுங்கள்.', noReading: 'வாசிக்கத் தேவையில்லை', whenReady: 'நீங்கள் தயாராக இருக்கும்போது', nextPath: 'உங்கள் அடுத்த கற்றல் பாதை', smartLab: 'ஸ்மார்ட் பாட ஆய்வகம்', personalLesson: 'உங்களுக்காக உருவாக்கிய பாடம்', adaptive: 'தனிப்பயனாக்கப்பட்டது', gameLearning: 'விளையாட்டு வழிக் கற்றல்', practiceCorner: 'பயிற்சி பகுதி', aiSpeech: 'ஏஐ பேச்சு இயந்திரம்', voiceCoach: 'குரல் கற்றல் மற்றும் உச்சரிப்பு பயிற்சியாளர்', trackGrowth: 'உங்கள் வளர்ச்சியைக் கண்காணிக்கவும்', learningProgress: 'உங்கள் கற்றல் முன்னேற்றம்', reportHelp: 'முடித்த பாடங்கள், குரல் பயிற்சி மற்றும் பெற்ற பதக்கங்களைக் காணுங்கள்.', viewCertificate: 'சான்றிதழைப் பார்க்கவும்', performanceReport: 'கற்றல் செயல்திறன் மற்றும் முன்னேற்ற அறிக்கை', unlockedBadges: 'திறக்கப்பட்ட சாதனை பதக்கங்கள்', badgesTrophies: 'பதக்கங்கள் மற்றும் கோப்பைகள்' },
+  Kannada: { coreCurriculum: 'ಮುಖ್ಯ ಪಠ್ಯಕ್ರಮ', learningContent: 'ಕಲಿಕಾ ವಿಷಯ ರಚನೆ', pillarsActive: '5 ಕೌಶಲ್ಯಗಳು ಸಕ್ರಿಯ', firstStep: 'ಇಂದಿನ ಮೊದಲ ಹೆಜ್ಜೆ', seeHearSay: 'ನೋಡಿ. ಆಲಿಸಿ. ಹೇಳಿ.', noReading: 'ಓದುವ ಅಗತ್ಯವಿಲ್ಲ', whenReady: 'ನೀವು ಸಿದ್ಧರಾದಾಗ', nextPath: 'ನಿಮ್ಮ ಮುಂದಿನ ಕಲಿಕೆ ಪಥ', smartLab: 'ಸ್ಮಾರ್ಟ್ ಪಾಠ ಪ್ರಯೋಗಾಲಯ', personalLesson: 'ನಿಮಗಾಗಿ ತಯಾರಿಸಿದ ಪಾಠ', adaptive: 'ಹೊಂದಿಕೊಳ್ಳುವ', gameLearning: 'ಆಟದ ಮೂಲಕ ಕಲಿಕೆ', practiceCorner: 'ಅಭ್ಯಾಸ ಮೂಲೆ', aiSpeech: 'ಎಐ ಸ್ಪೀಚ್ ಎಂಜಿನ್', voiceCoach: 'ಧ್ವನಿ ಕಲಿಕೆ ಮತ್ತು ಉಚ್ಚಾರಣೆ ಕೋಚ್', trackGrowth: 'ನಿಮ್ಮ ಬೆಳವಣಿಗೆಯನ್ನು ಗಮನಿಸಿ', learningProgress: 'ನಿಮ್ಮ ಕಲಿಕೆ ಪ್ರಗತಿ', reportHelp: 'ಪೂರ್ಣಗೊಂಡ ಪಾಠಗಳು, ಧ್ವನಿ ಅಭ್ಯಾಸ ಮತ್ತು ಪಡೆದ ಬ್ಯಾಡ್ಜ್‌ಗಳನ್ನು ನೋಡಿ.', viewCertificate: 'ಪ್ರಮಾಣಪತ್ರ ನೋಡಿ', performanceReport: 'ಕಲಿಕಾ ಕಾರ್ಯಕ್ಷಮತೆ ಮತ್ತು ಪ್ರಗತಿ ವರದಿ', unlockedBadges: 'ಅನ್‌ಲಾಕ್ ಮಾಡಿದ ಸಾಧನೆ ಬ್ಯಾಡ್ಜ್‌ಗಳು', badgesTrophies: 'ಬ್ಯಾಡ್ಜ್‌ಗಳು ಮತ್ತು ಟ್ರೋಫಿಗಳು' }
+};
+
+const interfacePracticeCopy = {
+  English: { learnerProfile: 'YOUR LEARNER PROFILE', hello: 'Hello', profileHelp: 'Keep these details up to date so we can personalise your learning.', fullName: 'Full name', age: 'Age', emailAddress: 'Email address', preferredLanguage: 'Preferred language', currentLevel: 'Current level', learningGoal: 'Learning goal', goHome: 'Go to my learning home', retakeAssessment: 'Retake starting assessment', saveChanges: 'Save changes', passage: 'Passage', listenReading: 'Listen to reading', nextPassage: 'Next passage', writingPractice: 'Writing practice', writingHint: 'Choose your keyboard, listen carefully, then type the word.', typeAnswer: 'Type answer here...', listenWord: 'Listen to word', checkAnswer: 'Check answer', nextQuestion: 'Next question', vocabularyBuilder: 'Essential vocabulary builder', nextVocabulary: 'Next vocabulary set', comprehensionPractice: 'Comprehension practice', correctAnswer: 'Correct! Great comprehension.', tryAgain: 'Try again!' },
+  Hindi: { learnerProfile: 'आपकी शिक्षार्थी प्रोफ़ाइल', hello: 'नमस्ते', profileHelp: 'अपने सीखने को व्यक्तिगत बनाने के लिए इन विवरणों को अपडेट रखें।', fullName: 'पूरा नाम', age: 'उम्र', emailAddress: 'ईमेल पता', preferredLanguage: 'पसंदीदा भाषा', currentLevel: 'वर्तमान स्तर', learningGoal: 'सीखने का लक्ष्य', goHome: 'मेरे सीखने के होम पर जाएं', retakeAssessment: 'शुरुआती मूल्यांकन फिर से लें', saveChanges: 'बदलाव सहेजें', passage: 'पाठ', listenReading: 'पठन सुनें', nextPassage: 'अगला पाठ', writingPractice: 'लेखन अभ्यास', writingHint: 'अपना कीबोर्ड चुनें, ध्यान से सुनें और शब्द टाइप करें।', typeAnswer: 'यहाँ उत्तर लिखें...', listenWord: 'शब्द सुनें', checkAnswer: 'उत्तर जांचें', nextQuestion: 'अगला प्रश्न', vocabularyBuilder: 'आवश्यक शब्दावली', nextVocabulary: 'अगला शब्द समूह', comprehensionPractice: 'समझ अभ्यास', correctAnswer: 'सही! बहुत अच्छा।', tryAgain: 'फिर से कोशिश करें!' },
+  Telugu: { learnerProfile: 'మీ అభ్యాస ప్రొఫైల్', hello: 'నమస్కారం', profileHelp: 'మీ అభ్యాసాన్ని వ్యక్తిగతంగా చేయడానికి ఈ వివరాలను నవీకరించండి.', fullName: 'పూర్తి పేరు', age: 'వయస్సు', emailAddress: 'ఇమెయిల్ చిరునామా', preferredLanguage: 'ఇష్టమైన భాష', currentLevel: 'ప్రస్తుత స్థాయి', learningGoal: 'అభ్యాస లక్ష్యం', goHome: 'నా అభ్యాస హోమ్‌కు వెళ్ళండి', retakeAssessment: 'ప్రారంభ మూల్యాంకనాన్ని మళ్లీ చేయండి', saveChanges: 'మార్పులను సేవ్ చేయండి', passage: 'పాఠం', listenReading: 'చదవడం వినండి', nextPassage: 'తదుపరి పాఠం', writingPractice: 'రచన అభ్యాసం', writingHint: 'మీ కీబోర్డ్ ఎంచుకుని, జాగ్రత్తగా విని పదాన్ని టైప్ చేయండి.', typeAnswer: 'ఇక్కడ సమాధానం టైప్ చేయండి...', listenWord: 'పదం వినండి', checkAnswer: 'సమాధానం తనిఖీ చేయండి', nextQuestion: 'తదుపరి ప్రశ్న', vocabularyBuilder: 'అవసరమైన పదజాలం', nextVocabulary: 'తదుపరి పదాల సమూహం', comprehensionPractice: 'అవగాహన అభ్యాసం', correctAnswer: 'సరైంది! చాలా బాగా చేశారు।', tryAgain: 'మళ్లీ ప్రయత్నించండి!' },
+  Tamil: { learnerProfile: 'உங்கள் கற்றல் சுயவிவரம்', hello: 'வணக்கம்', profileHelp: 'உங்கள் கற்றலை தனிப்பயனாக்க இந்த விவரங்களைப் புதுப்பிக்கவும்.', fullName: 'முழுப் பெயர்', age: 'வயது', emailAddress: 'மின்னஞ்சல் முகவரி', preferredLanguage: 'விருப்ப மொழி', currentLevel: 'தற்போதைய நிலை', learningGoal: 'கற்றல் இலக்கு', goHome: 'என் கற்றல் முகப்பிற்குச் செல்லவும்', retakeAssessment: 'தொடக்க மதிப்பீட்டை மீண்டும் எடுக்கவும்', saveChanges: 'மாற்றங்களைச் சேமிக்கவும்', passage: 'பகுதி', listenReading: 'வாசிப்பைக் கேளுங்கள்', nextPassage: 'அடுத்த பகுதி', writingPractice: 'எழுதும் பயிற்சி', writingHint: 'உங்கள் விசைப்பலகையைத் தேர்ந்தெடுத்து, கவனமாகக் கேட்டு சொல்லைத் தட்டச்சு செய்யுங்கள்.', typeAnswer: 'இங்கே பதிலைத் தட்டச்சு செய்யவும்...', listenWord: 'சொல்லைக் கேளுங்கள்', checkAnswer: 'பதிலைச் சரிபார்க்கவும்', nextQuestion: 'அடுத்த கேள்வி', vocabularyBuilder: 'முக்கிய சொற்களஞ்சியம்', nextVocabulary: 'அடுத்த சொல் தொகுப்பு', comprehensionPractice: 'புரிதல் பயிற்சி', correctAnswer: 'சரி! மிகவும் நன்று।', tryAgain: 'மீண்டும் முயற்சிக்கவும்!' },
+  Kannada: { learnerProfile: 'ನಿಮ್ಮ ಕಲಿಕಾ ಪ್ರೊಫೈಲ್', hello: 'ನಮಸ್ಕಾರ', profileHelp: 'ನಿಮ್ಮ ಕಲಿಕೆಯನ್ನು ವೈಯಕ್ತಿಕಗೊಳಿಸಲು ಈ ವಿವರಗಳನ್ನು ನವೀಕರಿಸಿ.', fullName: 'ಪೂರ್ಣ ಹೆಸರು', age: 'ವಯಸ್ಸು', emailAddress: 'ಇಮೇಲ್ ವಿಳಾಸ', preferredLanguage: 'ಆದ್ಯತೆಯ ಭಾಷೆ', currentLevel: 'ಪ್ರಸ್ತುತ ಹಂತ', learningGoal: 'ಕಲಿಕೆಯ ಗುರಿ', goHome: 'ನನ್ನ ಕಲಿಕೆ ಮುಖಪುಟಕ್ಕೆ ಹೋಗಿ', retakeAssessment: 'ಆರಂಭಿಕ ಮೌಲ್ಯಮಾಪನವನ್ನು ಮತ್ತೆ ತೆಗೆದುಕೊಳ್ಳಿ', saveChanges: 'ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಿ', passage: 'ಪಾಠ', listenReading: 'ಓದುವುದನ್ನು ಆಲಿಸಿ', nextPassage: 'ಮುಂದಿನ ಪಾಠ', writingPractice: 'ಬರವಣಿಗೆ ಅಭ್ಯಾಸ', writingHint: 'ನಿಮ್ಮ ಕೀಬೋರ್ಡ್ ಆಯ್ಕೆಮಾಡಿ, ಎಚ್ಚರಿಕೆಯಿಂದ ಆಲಿಸಿ ಮತ್ತು ಪದವನ್ನು ಟೈಪ್ ಮಾಡಿ.', typeAnswer: 'ಇಲ್ಲಿ ಉತ್ತರ ಟೈಪ್ ಮಾಡಿ...', listenWord: 'ಪದವನ್ನು ಆಲಿಸಿ', checkAnswer: 'ಉತ್ತರ ಪರಿಶೀಲಿಸಿ', nextQuestion: 'ಮುಂದಿನ ಪ್ರಶ್ನೆ', vocabularyBuilder: 'ಅಗತ್ಯ ಪದಕೋಶ', nextVocabulary: 'ಮುಂದಿನ ಪದಗಳ ಗುಂಪು', comprehensionPractice: 'ತಿಳುವಳಿಕೆ ಅಭ್ಯಾಸ', correctAnswer: 'ಸರಿಯಾಗಿದೆ! ತುಂಬಾ ಚೆನ್ನಾಗಿದೆ।', tryAgain: 'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ!' }
+};
+
+// Labels used inside interactive cards and games. The words being learned stay
+// in the learning language; these instructions follow the interface language.
+const interfaceActivityCopy = {
+  English: { flipLearn: 'FLIP & LEARN', interactiveFlashcards: 'Interactive Vocabulary Flashcards', flipCards: '3D Flip Cards', languageWord: 'WORD', cardTap: 'Tap card to flip ↺', meaning: 'MEANING', pictureMatch: 'Everyday decision', listenChoose: 'Audio response', wordChallenge: 'Word composer', letterHunt: 'Context reader', quickQuiz: 'Meaning check', newGameQuestion: 'New mission ↻', hearAgain: 'Play audio again', mission: 'Read the situation carefully and select the most accurate response.', points: '+10 XP', greatRound: 'Correct. Your progress has been recorded. +10 XP', missionComplete: 'Completed', niceTryGame: 'Not quite. Re-read the situation or play the audio again, then choose another answer.', tryNewQuestion: 'Continue with a new mission.' },
+  Hindi: { flipLearn: 'पलटकर सीखें', interactiveFlashcards: 'इंटरैक्टिव शब्दावली कार्ड', flipCards: '3D फ्लिप कार्ड', languageWord: 'शब्द', cardTap: 'कार्ड पलटने के लिए टैप करें ↺', meaning: 'अर्थ', pictureMatch: 'रोज़मर्रा का निर्णय', listenChoose: 'ऑडियो उत्तर', wordChallenge: 'शब्द रचना', letterHunt: 'संदर्भ पठन', quickQuiz: 'अर्थ जांच', newGameQuestion: 'नया कार्य ↻', hearAgain: 'ऑडियो फिर चलाएं', mission: 'स्थिति को ध्यान से पढ़ें और सबसे सही उत्तर चुनें।', points: '+10 अंक', greatRound: 'सही। आपकी प्रगति दर्ज हो गई है। +10 अंक', missionComplete: 'पूर्ण हुआ', niceTryGame: 'अभी नहीं। स्थिति फिर पढ़ें या ऑडियो फिर सुनें।', tryNewQuestion: 'नया कार्य जारी रखें।' },
+  Telugu: { flipLearn: 'తిప్పి నేర్చుకోండి', interactiveFlashcards: 'ఇంటరాక్టివ్ పదజాల కార్డులు', flipCards: '3D ఫ్లిప్ కార్డులు', languageWord: 'పదం', cardTap: 'కార్డును తిప్పడానికి నొక్కండి ↺', meaning: 'అర్థం', pictureMatch: 'రోజువారీ నిర్ణయం', listenChoose: 'ఆడియో స్పందన', wordChallenge: 'పద నిర్మాణం', letterHunt: 'సందర్భ పఠనం', quickQuiz: 'అర్థ తనిఖీ', newGameQuestion: 'కొత్త మిషన్ ↻', hearAgain: 'ఆడియోను మళ్లీ వినండి', mission: 'పరిస్థితిని జాగ్రత్తగా చదివి, సరైన సమాధానాన్ని ఎంచుకోండి।', points: '+10 పాయింట్లు', greatRound: 'సరైనది. మీ పురోగతి నమోదు అయింది। +10 పాయింట్లు', missionComplete: 'పూర్తయింది', niceTryGame: 'ఇంకా కాదు. పరిస్థితిని మళ్లీ చదవండి లేదా ఆడియోను మళ్లీ వినండి।', tryNewQuestion: 'కొత్త మిషన్ కొనసాగించండి।' },
+  Tamil: { flipLearn: 'திருப்பிக் கற்கவும்', interactiveFlashcards: 'ஊடாடும் சொற்களஞ்சிய அட்டைகள்', flipCards: '3D திருப்பு அட்டைகள்', languageWord: 'சொல்', cardTap: 'அட்டையைத் திருப்ப தட்டவும் ↺', meaning: 'பொருள்', pictureMatch: 'அன்றாட முடிவு', listenChoose: 'ஒலிப் பதில்', wordChallenge: 'சொல் அமைப்பு', letterHunt: 'சூழல் வாசிப்பு', quickQuiz: 'பொருள் சோதனை', newGameQuestion: 'புதிய பணி ↻', hearAgain: 'ஒலியை மீண்டும் இயக்கவும்', mission: 'சூழலைக் கவனமாகப் படித்து, மிகச் சரியான பதிலைத் தேர்ந்தெடுக்கவும்.', points: '+10 புள்ளிகள்', greatRound: 'சரி. உங்கள் முன்னேற்றம் பதிவு செய்யப்பட்டது. +10 புள்ளிகள்', missionComplete: 'முடிந்தது', niceTryGame: 'இன்னும் இல்லை. சூழலை மீண்டும் படிக்கவும் அல்லது ஒலியைக் கேட்கவும்.', tryNewQuestion: 'புதிய பணியைத் தொடரவும்.' },
+  Kannada: { flipLearn: 'ತಿರುಗಿಸಿ ಕಲಿಯಿರಿ', interactiveFlashcards: 'ಸಂವಾದಾತ್ಮಕ ಪದಕೋಶ ಕಾರ್ಡ್‌ಗಳು', flipCards: '3D ಫ್ಲಿಪ್ ಕಾರ್ಡ್‌ಗಳು', languageWord: 'ಪದ', cardTap: 'ಕಾರ್ಡ್ ತಿರುಗಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ ↺', meaning: 'ಅರ್ಥ', pictureMatch: 'ದೈನಂದಿನ ನಿರ್ಧಾರ', listenChoose: 'ಆಡಿಯೊ ಪ್ರತಿಕ್ರಿಯೆ', wordChallenge: 'ಪದ ರಚನೆ', letterHunt: 'ಸಂದರ್ಭ ಓದು', quickQuiz: 'ಅರ್ಥ ಪರಿಶೀಲನೆ', newGameQuestion: 'ಹೊಸ ಮಿಷನ್ ↻', hearAgain: 'ಆಡಿಯೊವನ್ನು ಮತ್ತೆ ಆಲಿಸಿ', mission: 'ಸಂದರ್ಭವನ್ನು ಗಮನದಿಂದ ಓದಿ, ಅತ್ಯಂತ ಸರಿಯಾದ ಉತ್ತರವನ್ನು ಆಯ್ಕೆಮಾಡಿ.', points: '+10 ಅಂಕಗಳು', greatRound: 'ಸರಿಯಾಗಿದೆ. ನಿಮ್ಮ ಪ್ರಗತಿ ದಾಖಲಿಸಲಾಗಿದೆ. +10 ಅಂಕಗಳು', missionComplete: 'ಪೂರ್ಣಗೊಂಡಿದೆ', niceTryGame: 'ಇನ್ನೂ ಅಲ್ಲ. ಸಂದರ್ಭವನ್ನು ಮತ್ತೆ ಓದಿ ಅಥವಾ ಆಡಿಯೊವನ್ನು ಮತ್ತೆ ಆಲಿಸಿ.', tryNewQuestion: 'ಹೊಸ ಮಿಷನ್ ಮುಂದುವರಿಸಿ.' }
+};
+
+const interfaceChallengePageCopy = {
+  English: { practicalChallenges: 'PRACTICAL CHALLENGES', everydaySkills: 'Use your skills in everyday situations', challengeExplain: 'Choose a challenge that matches your current level. Each one uses familiar words, listening, and reading.', levelPractice: 'Level-based practice', challengeStudio: 'CHALLENGE STUDIO', purposeActivities: 'Short activities with a real purpose', challengeHelp: 'Try as many questions as you need. Akshara adjusts choices for your learning level.', knowledgeCheck: 'KNOWLEDGE CHECK', shortQuizzes: 'Short quizzes for your current level', quizExplain: 'Answer one question at a time. Each quiz is generated from your selected language and learning level.', independentPractice: 'Independent practice', adaptiveQuiz: 'ADAPTIVE QUIZ', checkKnowledge: 'Check what you know', newQuizQuestion: 'Get a new question', quizHelp: 'There is no timer. Read, listen, and answer at your own pace.', preparingQuestion: 'Preparing a new quiz question…', freshQuestion: 'New practice question', nextQuizQuestion: 'Next question →', signInQuiz: 'Sign in to receive a new quiz question.' },
+  Hindi: { practicalChallenges: 'व्यावहारिक चुनौतियाँ', everydaySkills: 'रोज़मर्रा की स्थितियों में अपने कौशल का उपयोग करें', challengeExplain: 'अपने स्तर के अनुसार चुनौती चुनें। हर गतिविधि परिचित शब्दों, सुनने और पढ़ने का उपयोग करती है।', levelPractice: 'स्तर आधारित अभ्यास', challengeStudio: 'चुनौती केंद्र', purposeActivities: 'उद्देश्यपूर्ण छोटी गतिविधियाँ', challengeHelp: 'जितने प्रश्न चाहिए उतने आज़माएं। अक्षरा आपके स्तर के अनुसार विकल्प देता है।', knowledgeCheck: 'ज्ञान जांच', shortQuizzes: 'आपके वर्तमान स्तर के छोटे क्विज़', quizExplain: 'एक समय में एक प्रश्न का उत्तर दें। हर क्विज़ आपकी भाषा और स्तर के अनुसार बनाया जाता है।', independentPractice: 'स्वतंत्र अभ्यास', adaptiveQuiz: 'अनुकूलित क्विज़', checkKnowledge: 'जो आप जानते हैं उसे जांचें', newQuizQuestion: 'नया प्रश्न लें', quizHelp: 'कोई समय सीमा नहीं है। अपनी गति से पढ़ें, सुनें और उत्तर दें।', preparingQuestion: 'नया क्विज़ प्रश्न तैयार हो रहा है…', freshQuestion: 'नया अभ्यास प्रश्न', nextQuizQuestion: 'अगला प्रश्न →', signInQuiz: 'नया क्विज़ प्रश्न पाने के लिए साइन इन करें।' },
+  Telugu: { practicalChallenges: 'ఆచరణాత్మక సవాళ్లు', everydaySkills: 'రోజువారీ పరిస్థితుల్లో మీ నైపుణ్యాలను ఉపయోగించండి', challengeExplain: 'మీ స్థాయికి సరిపోయే సవాలును ఎంచుకోండి. ప్రతి కార్యకలాపం తెలిసిన పదాలు, వినడం మరియు చదవడం ఉపయోగిస్తుంది।', levelPractice: 'స్థాయి ఆధారిత అభ్యాసం', challengeStudio: 'సవాళ్ల కేంద్రం', purposeActivities: 'లక్ష్యంతో కూడిన చిన్న కార్యకలాపాలు', challengeHelp: 'అవసరమైనన్ని ప్రశ్నలు ప్రయత్నించండి. అక్షర మీ స్థాయికి అనుగుణంగా ఎంపికలను మార్చుతుంది।', knowledgeCheck: 'జ్ఞాన తనిఖీ', shortQuizzes: 'మీ ప్రస్తుత స్థాయికి చిన్న క్విజ్‌లు', quizExplain: 'ఒక్కో ప్రశ్నకు ఒక్కోసారి సమాధానం ఇవ్వండి. ప్రతి క్విజ్ మీ భాష మరియు స్థాయికి అనుగుణంగా రూపొందించబడుతుంది।', independentPractice: 'స్వతంత్ర అభ్యాసం', adaptiveQuiz: 'అనుకూల క్విజ్', checkKnowledge: 'మీకు తెలిసినది తనిఖీ చేయండి', newQuizQuestion: 'కొత్త ప్రశ్న పొందండి', quizHelp: 'సమయ పరిమితి లేదు. మీ వేగంతో చదవండి, వినండి మరియు సమాధానం ఇవ్వండి।', preparingQuestion: 'కొత్త క్విజ్ ప్రశ్న సిద్ధమవుతోంది…', freshQuestion: 'కొత్త అభ్యాస ప్రశ్న', nextQuizQuestion: 'తదుపరి ప్రశ్న →', signInQuiz: 'కొత్త క్విజ్ ప్రశ్న కోసం సైన్ ఇన్ చేయండి।' },
+  Tamil: { practicalChallenges: 'நடைமுறை சவால்கள்', everydaySkills: 'அன்றாட சூழலில் உங்கள் திறன்களைப் பயன்படுத்துங்கள்', challengeExplain: 'உங்கள் நிலைக்கு ஏற்ற சவாலைத் தேர்ந்தெடுக்கவும். ஒவ்வொரு செயலிலும் அறிமுகமான சொற்கள், கேட்டல் மற்றும் வாசித்தல் உள்ளன.', levelPractice: 'நிலை அடிப்படையிலான பயிற்சி', challengeStudio: 'சவால் மையம்', purposeActivities: 'நோக்கமுள்ள குறும் செயல்பாடுகள்', challengeHelp: 'தேவையான அளவு கேள்விகளை முயற்சிக்கலாம். அக்ஷரா உங்கள் நிலைக்கு ஏற்ப தேர்வுகளை மாற்றும்.', knowledgeCheck: 'அறிவு சோதனை', shortQuizzes: 'உங்கள் தற்போதைய நிலைக்கான குறும் வினாடி வினாக்கள்', quizExplain: 'ஒரு நேரத்தில் ஒரு கேள்விக்கு பதிலளிக்கவும். ஒவ்வொரு வினாடி வினாவும் உங்கள் மொழி மற்றும் நிலைக்கு ஏற்ப உருவாகும்.', independentPractice: 'சுய பயிற்சி', adaptiveQuiz: 'தகவமைப்பு வினாடி வினா', checkKnowledge: 'உங்களுக்குத் தெரிந்ததைச் சரிபார்க்கவும்', newQuizQuestion: 'புதிய கேள்வியைப் பெறவும்', quizHelp: 'நேர வரம்பு இல்லை. உங்கள் வேகத்தில் படித்து, கேட்டு, பதிலளிக்கவும்.', preparingQuestion: 'புதிய வினாடி வினா கேள்வி தயாராகிறது…', freshQuestion: 'புதிய பயிற்சிக் கேள்வி', nextQuizQuestion: 'அடுத்த கேள்வி →', signInQuiz: 'புதிய வினாடி வினா கேள்விக்கு உள்நுழையவும்.' },
+  Kannada: { practicalChallenges: 'ಪ್ರಾಯೋಗಿಕ ಸವಾಲುಗಳು', everydaySkills: 'ದೈನಂದಿನ ಸಂದರ್ಭಗಳಲ್ಲಿ ನಿಮ್ಮ ಕೌಶಲ್ಯಗಳನ್ನು ಬಳಸಿ', challengeExplain: 'ನಿಮ್ಮ ಹಂತಕ್ಕೆ ಸರಿಹೊಂದುವ ಸವಾಲನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಪ್ರತಿಯೊಂದು ಚಟುವಟಿಕೆಯಲ್ಲಿ ಪರಿಚಿತ ಪದಗಳು, ಆಲಿಸುವಿಕೆ ಮತ್ತು ಓದುವಿಕೆ ಇವೆ.', levelPractice: 'ಹಂತ ಆಧಾರಿತ ಅಭ್ಯಾಸ', challengeStudio: 'ಸವಾಲು ಕೇಂದ್ರ', purposeActivities: 'ಉದ್ದೇಶಪೂರ್ಣ ಸಣ್ಣ ಚಟುವಟಿಕೆಗಳು', challengeHelp: 'ಬೇಕಾದಷ್ಟು ಪ್ರಶ್ನೆಗಳನ್ನು ಪ್ರಯತ್ನಿಸಿ. ಅಕ್ಷರವು ನಿಮ್ಮ ಹಂತಕ್ಕೆ ತಕ್ಕಂತೆ ಆಯ್ಕೆಗಳನ್ನು ಬದಲಾಯಿಸುತ್ತದೆ.', knowledgeCheck: 'ಜ್ಞಾನ ಪರಿಶೀಲನೆ', shortQuizzes: 'ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಹಂತಕ್ಕೆ ಸಣ್ಣ ಪ್ರಶ್ನೋತ್ತರಗಳು', quizExplain: 'ಒಂದು ಸಮಯದಲ್ಲಿ ಒಂದು ಪ್ರಶ್ನೆಗೆ ಉತ್ತರಿಸಿ. ಪ್ರತಿಯೊಂದು ಪ್ರಶ್ನೋತ್ತರವು ನಿಮ್ಮ ಭಾಷೆ ಮತ್ತು ಹಂತಕ್ಕೆ ತಕ್ಕಂತೆ ರಚಿಸಲಾಗಿದೆ.', independentPractice: 'ಸ್ವತಂತ್ರ ಅಭ್ಯಾಸ', adaptiveQuiz: 'ಹೊಂದಿಕೊಳ್ಳುವ ಪ್ರಶ್ನೋತ್ತರ', checkKnowledge: 'ನಿಮಗೆ ತಿಳಿದಿರುವುದನ್ನು ಪರಿಶೀಲಿಸಿ', newQuizQuestion: 'ಹೊಸ ಪ್ರಶ್ನೆ ಪಡೆಯಿರಿ', quizHelp: 'ಸಮಯ ಮಿತಿ ಇಲ್ಲ. ನಿಮ್ಮ ವೇಗದಲ್ಲಿ ಓದಿ, ಆಲಿಸಿ ಮತ್ತು ಉತ್ತರಿಸಿ.', preparingQuestion: 'ಹೊಸ ಪ್ರಶ್ನೋತ್ತರ ಪ್ರಶ್ನೆ ಸಿದ್ಧವಾಗುತ್ತಿದೆ…', freshQuestion: 'ಹೊಸ ಅಭ್ಯಾಸ ಪ್ರಶ್ನೆ', nextQuizQuestion: 'ಮುಂದಿನ ಪ್ರಶ್ನೆ →', signInQuiz: 'ಹೊಸ ಪ್ರಶ್ನೋತ್ತರ ಪ್ರಶ್ನೆಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.' }
+};
+
+const interfaceChallengeControlCopy = {
+  English: { ready: 'Ready', clear: 'Clear', check: 'Check' },
+  Hindi: { ready: 'तैयार', clear: 'साफ़ करें', check: 'जांचें' },
+  Telugu: { ready: 'సిద్ధం', clear: 'తొలగించండి', check: 'తనిఖీ చేయండి' },
+  Tamil: { ready: 'தயார்', clear: 'அழி', check: 'சரிபார்க்கவும்' },
+  Kannada: { ready: 'ಸಿದ್ಧ', clear: 'ತೆರವುಗೊಳಿಸಿ', check: 'ಪರಿಶೀಲಿಸಿ' }
+};
+
+const interfaceHomeAnalyticsCopy = {
+  English: { journeyReady: 'READY WHEN YOU ARE', guidedPractice: 'Easy, guided practice', chooseActivity: 'Choose one activity now. You can return whenever you are ready.', learnLetter: 'Learn one letter or word', guidedLesson: 'Guided micro-lesson', wordActivity: 'Try a quick word activity', vocabPractice: 'Vocabulary practice', listenPhrase: 'Listen and say a phrase', speechPractice: 'Speech practice', todaysStep: "TODAY'S STEP", myLevel: 'MY LEVEL', practicePoints: 'PRACTICE POINTS', learningDays: 'LEARNING DAYS', skillSnapshot: 'SKILL SNAPSHOT', learningStrengths: 'Your learning strengths', liveProfile: 'Live profile', executiveAnalytics: 'EXECUTIVE ANALYTICS', lessonsCompleted: 'LESSONS COMPLETED', voiceAccuracy: 'VOICE ACCURACY', benchmarkTier: 'BENCHMARK TIER', gamification: 'GAMIFICATION' },
+  Hindi: { journeyReady: 'जब आप तैयार हों', guidedPractice: 'सरल मार्गदर्शित अभ्यास', chooseActivity: 'अभी एक गतिविधि चुनें। जब चाहें वापस आ सकते हैं।', learnLetter: 'एक अक्षर या शब्द सीखें', guidedLesson: 'मार्गदर्शित छोटा पाठ', wordActivity: 'त्वरित शब्द गतिविधि आज़माएं', vocabPractice: 'शब्दावली अभ्यास', listenPhrase: 'वाक्य सुनें और बोलें', speechPractice: 'बोलने का अभ्यास', todaysStep: 'आज का कदम', myLevel: 'मेरा स्तर', practicePoints: 'अभ्यास अंक', learningDays: 'सीखने के दिन', skillSnapshot: 'कौशल झलक', learningStrengths: 'आपकी सीखने की ताकत', liveProfile: 'लाइव प्रोफ़ाइल', executiveAnalytics: 'प्रदर्शन विश्लेषण', lessonsCompleted: 'पूरे किए गए पाठ', voiceAccuracy: 'वाणी सटीकता', benchmarkTier: 'स्तर श्रेणी', gamification: 'खेल आधारित प्रगति' },
+  Telugu: { journeyReady: 'మీరు సిద్ధమైనప్పుడు', guidedPractice: 'సులభ మార్గదర్శిత అభ్యాసం', chooseActivity: 'ఇప్పుడు ఒక కార్యకలాపాన్ని ఎంచుకోండి. మీరు సిద్ధమైనప్పుడు తిరిగి రావచ్చు.', learnLetter: 'ఒక అక్షరం లేదా పదం నేర్చుకోండి', guidedLesson: 'మార్గదర్శిత చిన్న పాఠం', wordActivity: 'త్వరిత పద కార్యకలాపాన్ని ప్రయత్నించండి', vocabPractice: 'పదజాల అభ్యాసం', listenPhrase: 'వాక్యాన్ని విని చెప్పండి', speechPractice: 'మాట్లాడే అభ్యాసం', todaysStep: 'నేటి అడుగు', myLevel: 'నా స్థాయి', practicePoints: 'అభ్యాస పాయింట్లు', learningDays: 'అభ్యాస దినాలు', skillSnapshot: 'నైపుణ్య సారాంశం', learningStrengths: 'మీ అభ్యాస బలాలు', liveProfile: 'ప్రస్తుత ప్రొఫైల్', executiveAnalytics: 'పనితీరు విశ్లేషణ', lessonsCompleted: 'పూర్తయిన పాఠాలు', voiceAccuracy: 'వాయిస్ ఖచ్చితత్వం', benchmarkTier: 'స్థాయి శ్రేణి', gamification: 'ఆటల ద్వారా పురోగతి' },
+  Tamil: { journeyReady: 'நீங்கள் தயாரானபோது', guidedPractice: 'எளிய வழிகாட்டப்பட்ட பயிற்சி', chooseActivity: 'இப்போது ஒரு செயல்பாட்டைத் தேர்ந்தெடுக்கவும். தயாரானபோது திரும்பி வரலாம்.', learnLetter: 'ஒரு எழுத்து அல்லது சொல்லைக் கற்கவும்', guidedLesson: 'வழிகாட்டப்பட்ட சிறு பாடம்', wordActivity: 'விரைவு சொல் செயல்பாட்டை முயற்சிக்கவும்', vocabPractice: 'சொற்களஞ்சிய பயிற்சி', listenPhrase: 'வாக்கியத்தைக் கேட்டு சொல்லுங்கள்', speechPractice: 'பேச்சுப் பயிற்சி', todaysStep: 'இன்றைய படி', myLevel: 'என் நிலை', practicePoints: 'பயிற்சிப் புள்ளிகள்', learningDays: 'கற்றல் நாட்கள்', skillSnapshot: 'திறன் சுருக்கம்', learningStrengths: 'உங்கள் கற்றல் பலங்கள்', liveProfile: 'நேரடி சுயவிவரம்', executiveAnalytics: 'செயல்திறன் பகுப்பாய்வு', lessonsCompleted: 'முடித்த பாடங்கள்', voiceAccuracy: 'குரல் துல்லியம்', benchmarkTier: 'நிலை வரிசை', gamification: 'விளையாட்டு வழி முன்னேற்றம்' },
+  Kannada: { journeyReady: 'ನೀವು ಸಿದ್ಧರಾದಾಗ', guidedPractice: 'ಸರಳ ಮಾರ್ಗದರ್ಶಿತ ಅಭ್ಯಾಸ', chooseActivity: 'ಈಗ ಒಂದು ಚಟುವಟಿಕೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ. ನೀವು ಸಿದ್ಧರಾದಾಗ ಮರಳಿ ಬರಬಹುದು.', learnLetter: 'ಒಂದು ಅಕ್ಷರ ಅಥವಾ ಪದ ಕಲಿಯಿರಿ', guidedLesson: 'ಮಾರ್ಗದರ್ಶಿತ ಸೂಕ್ಷ್ಮ ಪಾಠ', wordActivity: 'ತ್ವರಿತ ಪದ ಚಟುವಟಿಕೆ ಪ್ರಯತ್ನಿಸಿ', vocabPractice: 'ಪದಕೋಶ ಅಭ್ಯಾಸ', listenPhrase: 'ವಾಕ್ಯವನ್ನು ಆಲಿಸಿ ಮತ್ತು ಹೇಳಿ', speechPractice: 'ಮಾತಿನ ಅಭ್ಯಾಸ', todaysStep: 'ಇಂದಿನ ಹೆಜ್ಜೆ', myLevel: 'ನನ್ನ ಹಂತ', practicePoints: 'ಅಭ್ಯಾಸ ಅಂಕಗಳು', learningDays: 'ಕಲಿಕೆಯ ದಿನಗಳು', skillSnapshot: 'ಕೌಶಲ್ಯದ ಚಿತ್ರಣ', learningStrengths: 'ನಿಮ್ಮ ಕಲಿಕೆಯ ಶಕ್ತಿಗಳು', liveProfile: 'ನೇರ ಪ್ರೊಫೈಲ್', executiveAnalytics: 'ಕಾರ್ಯಕ್ಷಮತೆ ವಿಶ್ಲೇಷಣೆ', lessonsCompleted: 'ಪೂರ್ಣಗೊಂಡ ಪಾಠಗಳು', voiceAccuracy: 'ಧ್ವನಿ ನಿಖರತೆ', benchmarkTier: 'ಮಟ್ಟದ ಶ್ರೇಣಿ', gamification: 'ಆಟೀಕರಣ' }
+};
+
+const interfaceHomeDetailCopy = {
+  English: { personalLearningHome: 'Your personal Akshara learning home', strengthHelp: 'Your practice results help Akshara choose what to recommend next.', quickPractice: 'QUICK PRACTICE', nextActivity: 'Choose your next activity', reviewVocab: 'Review vocabulary', buildWords: 'Build useful words', practiceSpeaking: 'Practise speaking', improvePronunciation: 'Improve pronunciation', viewReport: 'View your report', seeProgress: 'See your progress', weeklyCheckin: 'WEEKLY CHECK-IN', learningHabit: 'Keep your learning habit going', consistency: 'Consistency matters', weeklyHelp: 'Small, regular practice makes new words easier to remember.', benchmarkFramework: 'BENCHMARK FRAMEWORK', proficiencyLevels: 'Defined Proficiency Levels', proficiencyTiers: 'Proficiency Tiers' },
+  Hindi: { pillarHelper: 'तुरंत प्रतिक्रिया के साथ अभ्यास के लिए एक सीखने का कौशल चुनें। नए अभ्यास के लिए कभी भी अगला दबाएं।', quickPractice: 'त्वरित अभ्यास', nextActivity: 'अपनी अगली गतिविधि चुनें', reviewVocab: 'शब्दावली दोहराएं', buildWords: 'उपयोगी शब्द सीखें', practiceSpeaking: 'बोलने का अभ्यास', improvePronunciation: 'उच्चारण सुधारें', viewReport: 'अपनी रिपोर्ट देखें', seeProgress: 'अपनी प्रगति देखें', weeklyCheckin: 'साप्ताहिक जांच', learningHabit: 'अपनी सीखने की आदत बनाए रखें', consistency: 'निरंतरता महत्वपूर्ण है', benchmarkFramework: 'स्तर रूपरेखा', proficiencyLevels: 'निर्धारित दक्षता स्तर', proficiencyTiers: 'दक्षता स्तर' },
+  Telugu: { pillarHelper: 'తక్షణ సూచనలతో అభ్యాసం చేయడానికి ఒక నైపుణ్యాన్ని ఎంచుకోండి. కొత్త అభ్యాసం కోసం ఎప్పుడైనా తదుపరి నొక్కండి.', quickPractice: 'త్వరిత అభ్యాసం', nextActivity: 'మీ తదుపరి కార్యకలాపాన్ని ఎంచుకోండి', reviewVocab: 'పదజాలాన్ని పునఃసమీక్షించండి', buildWords: 'ఉపయోగకరమైన పదాలు నేర్చుకోండి', practiceSpeaking: 'మాట్లాడే అభ్యాసం', improvePronunciation: 'ఉచ్చారణను మెరుగుపరచండి', viewReport: 'మీ నివేదికను చూడండి', seeProgress: 'మీ పురోగతిని చూడండి', weeklyCheckin: 'వారపు తనిఖీ', learningHabit: 'మీ అభ్యాస అలవాటును కొనసాగించండి', consistency: 'నిరంతరత ముఖ్యం', benchmarkFramework: 'స్థాయి చట్రం', proficiencyLevels: 'నిర్దేశిత నైపుణ్య స్థాయిలు', proficiencyTiers: 'నైపుణ్య స్థాయిలు' },
+  Tamil: { pillarHelper: 'உடனடி கருத்துடன் பயிற்சி செய்ய ஒரு கற்றல் திறனைத் தேர்ந்தெடுக்கவும். புதிய பயிற்சிக்கு எப்போது வேண்டுமானாலும் அடுத்து அழுத்தவும்.', quickPractice: 'விரைவு பயிற்சி', nextActivity: 'உங்கள் அடுத்த செயல்பாட்டைத் தேர்ந்தெடுக்கவும்', reviewVocab: 'சொற்களஞ்சியத்தை மீள்பார்க்கவும்', buildWords: 'பயனுள்ள சொற்களைக் கற்கவும்', practiceSpeaking: 'பேச்சுப் பயிற்சி', improvePronunciation: 'உச்சரிப்பை மேம்படுத்தவும்', viewReport: 'உங்கள் அறிக்கையைப் பார்க்கவும்', seeProgress: 'உங்கள் முன்னேற்றத்தைப் பார்க்கவும்', weeklyCheckin: 'வாராந்திர சரிபார்ப்பு', learningHabit: 'உங்கள் கற்றல் பழக்கத்தைத் தொடருங்கள்', consistency: 'தொடர்ச்சி முக்கியம்', benchmarkFramework: 'நிலை அமைப்பு', proficiencyLevels: 'வரையறுக்கப்பட்ட திறன் நிலைகள்', proficiencyTiers: 'திறன் நிலைகள்' },
+  Kannada: { personalLearningHome: 'ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಅಕ್ಷರ ಕಲಿಕಾ ಮುಖಪುಟ', pillarHelper: 'ತಕ್ಷಣದ ಪ್ರತಿಕ್ರಿಯೆಯೊಂದಿಗೆ ಅಭ್ಯಾಸ ಮಾಡಲು ಕಲಿಕೆಯ ಕೌಶಲ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಹೊಸ ಅಭ್ಯಾಸಕ್ಕಾಗಿ ಯಾವಾಗ ಬೇಕಾದರೂ ಮುಂದಕ್ಕೆ ಒತ್ತಿರಿ.', strengthHelp: 'ನಿಮ್ಮ ಅಭ್ಯಾಸದ ಫಲಿತಾಂಶಗಳು ಮುಂದೇನು ಶಿಫಾರಸು ಮಾಡಬೇಕೆಂದು ಅಕ್ಷರಕ್ಕೆ ಸಹಾಯ ಮಾಡುತ್ತವೆ.', quickPractice: 'ತ್ವರಿತ ಅಭ್ಯಾಸ', nextActivity: 'ನಿಮ್ಮ ಮುಂದಿನ ಚಟುವಟಿಕೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ', reviewVocab: 'ಪದಕೋಶ ಪುನರವಲೋಕನ', buildWords: 'ಉಪಯುಕ್ತ ಪದಗಳನ್ನು ಕಲಿಯಿರಿ', practiceSpeaking: 'ಮಾತನಾಡುವ ಅಭ್ಯಾಸ', improvePronunciation: 'ಉಚ್ಚಾರಣೆ ಸುಧಾರಿಸಿ', viewReport: 'ನಿಮ್ಮ ವರದಿ ನೋಡಿ', seeProgress: 'ನಿಮ್ಮ ಪ್ರಗತಿ ನೋಡಿ', weeklyCheckin: 'ವಾರದ ಪರಿಶೀಲನೆ', learningHabit: 'ನಿಮ್ಮ ಕಲಿಕೆಯ ಅಭ್ಯಾಸವನ್ನು ಮುಂದುವರಿಸಿ', consistency: 'ನಿರಂತರತೆ ಮುಖ್ಯ', weeklyHelp: 'ಸಣ್ಣ, ನಿಯಮಿತ ಅಭ್ಯಾಸವು ಹೊಸ ಪದಗಳನ್ನು ಸುಲಭವಾಗಿ ನೆನಪಿಡಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ.', benchmarkFramework: 'ಮಟ್ಟದ ಚೌಕಟ್ಟು', proficiencyLevels: 'ನಿರ್ದಿಷ್ಟ ಪ್ರಾವೀಣ್ಯ ಹಂತಗಳು', proficiencyTiers: 'ಪ್ರಾವೀಣ್ಯ ಹಂತಗಳು' }
+};
+
+const interfaceLevelCopy = {
+  English: { foundationalTier: 'Foundational Tier', gamifiedProgress: 'Learning progress', consistentLearner: 'Consistent learner', levelBeginner: 'Beginner', levelBeginnerDesc: 'Letter recognition, sound decoding, & ~50 basic words.', levelElementary: 'Elementary', levelElementaryDesc: 'Reading short sentences, signs, & writing a name.', levelIntermediate: 'Intermediate', levelIntermediateDesc: 'Paragraph comprehension & everyday message writing.', levelAdvanced: 'Advanced', levelAdvancedDesc: 'Fluent story reading, form filling, & communication.' },
+  Hindi: { foundationalTier: 'बुनियादी स्तर', gamifiedProgress: 'सीखने की प्रगति', consistentLearner: 'नियमित शिक्षार्थी', levelBeginner: 'आरंभिक', levelBeginnerDesc: 'अक्षर पहचान, ध्वनि समझना और लगभग 50 बुनियादी शब्द।', levelElementary: 'प्रारंभिक', levelElementaryDesc: 'छोटे वाक्य, संकेत पढ़ना और नाम लिखना।', levelIntermediate: 'मध्यवर्ती', levelIntermediateDesc: 'अनुच्छेद समझना और रोज़मर्रा के संदेश लिखना।', levelAdvanced: 'उन्नत', levelAdvancedDesc: 'धाराप्रवाह पढ़ना, फॉर्म भरना और संवाद।' },
+  Telugu: { foundationalTier: 'ప్రాథమిక స్థాయి', gamifiedProgress: 'అభ్యాస పురోగతి', consistentLearner: 'నిరంతర అభ్యాసకుడు', levelBeginner: 'ప్రారంభ స్థాయి', levelBeginnerDesc: 'అక్షర గుర్తింపు, శబ్ద అవగాహన మరియు సుమారు 50 ప్రాథమిక పదాలు.', levelElementary: 'ప్రాథమిక', levelElementaryDesc: 'చిన్న వాక్యాలు, సంకేతాలు చదవడం మరియు పేరు రాయడం.', levelIntermediate: 'మధ్యస్థ', levelIntermediateDesc: 'పేరా అవగాహన మరియు రోజువారీ సందేశ రచన.', levelAdvanced: 'ఉన్నత', levelAdvancedDesc: 'సరళమైన కథా పఠనం, ఫారమ్ నింపడం మరియు సంభాషణ.' },
+  Tamil: { foundationalTier: 'அடிப்படை நிலை', gamifiedProgress: 'கற்றல் முன்னேற்றம்', consistentLearner: 'தொடர்ந்து கற்பவர்', levelBeginner: 'தொடக்க நிலை', levelBeginnerDesc: 'எழுத்து அறிதல், ஒலி புரிதல் மற்றும் சுமார் 50 அடிப்படைச் சொற்கள்.', levelElementary: 'அடிப்படை', levelElementaryDesc: 'சிறு வாக்கியங்கள், அடையாளங்கள் வாசித்தல் மற்றும் பெயர் எழுதுதல்.', levelIntermediate: 'இடைநிலை', levelIntermediateDesc: 'பத்தி புரிதல் மற்றும் அன்றாட செய்தி எழுதுதல்.', levelAdvanced: 'மேம்பட்ட', levelAdvancedDesc: 'சரளமான கதை வாசிப்பு, படிவம் நிரப்புதல் மற்றும் தொடர்பு.' },
+  Kannada: { foundationalTier: 'ಮೂಲ ಹಂತ', gamifiedProgress: 'ಕಲಿಕೆಯ ಪ್ರಗತಿ', consistentLearner: 'ನಿರಂತರ ಕಲಿಕೆಗಾರ', levelBeginner: 'ಆರಂಭಿಕ', levelBeginnerDesc: 'ಅಕ್ಷರ ಗುರುತಿಸುವಿಕೆ, ಧ್ವನಿ ಅರ್ಥಮಾಡಿಕೊಳ್ಳುವಿಕೆ ಮತ್ತು ಸುಮಾರು 50 ಮೂಲ ಪದಗಳು.', levelElementary: 'ಪ್ರಾಥಮಿಕ', levelElementaryDesc: 'ಸಣ್ಣ ವಾಕ್ಯಗಳು, ಫಲಕಗಳನ್ನು ಓದುವುದು ಮತ್ತು ಹೆಸರು ಬರೆಯುವುದು.', levelIntermediate: 'ಮಧ್ಯಮ', levelIntermediateDesc: 'ಪ್ಯಾರಾಗ್ರಾಫ್ ಅರ್ಥಮಾಡಿಕೊಳ್ಳುವುದು ಮತ್ತು ದೈನಂದಿನ ಸಂದೇಶ ಬರೆಯುವುದು.', levelAdvanced: 'ಮುನ್ನಡೆದ', levelAdvancedDesc: 'ಸರಾಗ ಕಥೆ ಓದುವುದು, ನಮೂನೆ ತುಂಬುವುದು ಮತ್ತು ಸಂವಹನ.' }
+};
+
+function currentInterfaceCopy() {
+  const language = localStorage.getItem('akshara_interface_language') || 'English';
+  return { ...interfaceCopy.English, ...(interfaceCopy[language] || {}), ...interfaceExtraCopy.English, ...(interfaceExtraCopy[language] || {}), ...interfaceSectionCopy.English, ...(interfaceSectionCopy[language] || {}), ...interfacePracticeCopy.English, ...(interfacePracticeCopy[language] || {}), ...interfaceActivityCopy.English, ...(interfaceActivityCopy[language] || {}), ...interfaceChallengePageCopy.English, ...(interfaceChallengePageCopy[language] || {}), ...interfaceChallengeControlCopy.English, ...(interfaceChallengeControlCopy[language] || {}), ...interfaceHomeAnalyticsCopy.English, ...(interfaceHomeAnalyticsCopy[language] || {}), ...interfaceHomeDetailCopy.English, ...(interfaceHomeDetailCopy[language] || {}), ...interfaceLevelCopy.English, ...(interfaceLevelCopy[language] || {}) };
+}
+
+function uiText(key) { return currentInterfaceCopy()[key] || key; }
+
+function dashboardText(key, fallback) {
+  const language = localStorage.getItem('akshara_interface_language') || 'English';
+  const copy = {
+    Hindi: { unlocked: 'अनलॉक ✓', locked: 'लॉक 🔒', badgeFirst: 'नव-शिक्षार्थी अग्रणी', badgeFirstDesc: 'अक्षरा पोर्टल पर पंजीकृत', badgeStreak: '3-दिन सीखने का क्रम', badgeStreakDesc: 'लगातार 3 दिन सीखा', badgePuzzle: 'पहेली विशेषज्ञ', badgePuzzleDesc: 'साक्षरता पहेलियाँ पूरी कीं', badgeVoice: 'वॉइस स्टार', badgeVoiceDesc: '85% से अधिक उच्चारण स्कोर', badgeLesson: 'पाठ विद्वान', badgeLessonDesc: 'एक सूक्ष्म पाठ पूरा किया' },
+    Telugu: { unlocked: 'అన్‌లాక్ ✓', locked: 'లాక్ 🔒', badgeFirst: 'కొత్త అభ్యాసకుడి మార్గదర్శి', badgeFirstDesc: 'అక్షర పోర్టల్‌లో నమోదు చేశారు', badgeStreak: '3-రోజుల అభ్యాస పరంపర', badgeStreakDesc: 'వరుసగా 3 రోజులు నేర్చుకున్నారు', badgePuzzle: 'పజిల్ నిపుణుడు', badgePuzzleDesc: 'అక్షరాస్యత పజిల్స్ పూర్తి చేశారు', badgeVoice: 'వాయిస్ స్టార్', badgeVoiceDesc: '85% కంటే ఎక్కువ ఉచ్చారణ స్కోర్', badgeLesson: 'పాఠ పండితుడు', badgeLessonDesc: 'ఒక సూక్ష్మ పాఠం పూర్తి చేశారు' },
+    Tamil: { unlocked: 'திறக்கப்பட்டது ✓', locked: 'பூட்டப்பட்டது 🔒', badgeFirst: 'புதிய கற்பவர் முன்னோடி', badgeFirstDesc: 'அக்ஷரா தளத்தில் பதிவு செய்தார்', badgeStreak: '3 நாள் கற்றல் தொடர்', badgeStreakDesc: 'தொடர்ந்து 3 நாட்கள் கற்றார்', badgePuzzle: 'புதிர் நிபுணர்', badgePuzzleDesc: 'எழுத்தறிவு புதிர்களை முடித்தார்', badgeVoice: 'குரல் நட்சத்திரம்', badgeVoiceDesc: '85% க்கும் மேற்பட்ட உச்சரிப்பு மதிப்பெண்', badgeLesson: 'பாட அறிஞர்', badgeLessonDesc: 'ஒரு சிறு பாடத்தை முடித்தார்' },
+    Kannada: { dailyLesson: 'ದೈನಂದಿನ ಸೂಕ್ಷ್ಮ ಪಾಠ', dailyTarget: 'ದೈನಂದಿನ ಗುರಿ ಸಕ್ರಿಯ', foundational: 'ಮೂಲ ಹಂತ', xpEarned: 'XP ಗಳಿಸಲಾಗಿದೆ', progress: 'ಅಭ್ಯಾಸ ಪ್ರಗತಿ', daysActive: 'ದಿನಗಳು ಸಕ್ರಿಯ', consistent: 'ನಿರಂತರ ಕಲಿಕೆಗಾರ', unlocked: 'ಅನ್‌ಲಾಕ್ ಆಗಿದೆ ✓', locked: 'ಲಾಕ್ ಆಗಿದೆ 🔒', badgeFirst: 'ಹೊಸ ಕಲಿಕೆಗಾರ ಮುಂಚೂಣಿ', badgeFirstDesc: 'ಅಕ್ಷರ ಪೋರ್ಟಲ್‌ನಲ್ಲಿ ನೋಂದಾಯಿಸಲಾಗಿದೆ', badgeStreak: '3 ದಿನಗಳ ನಿರಂತರ ಕಲಿಕೆ', badgeStreakDesc: '3 ದಿನ ನಿರಂತರವಾಗಿ ಕಲಿತಿದ್ದೀರಿ', badgePuzzle: 'ಒಗಟು ತಜ್ಞ', badgePuzzleDesc: 'ಸಾಕ್ಷರತಾ ಒಗಟುಗಳನ್ನು ಪೂರ್ಣಗೊಳಿಸಲಾಗಿದೆ', badgeVoice: 'ಧ್ವನಿ ತಾರೆ', badgeVoiceDesc: '85% ಕ್ಕಿಂತ ಹೆಚ್ಚಿನ ಉಚ್ಚಾರಣೆ ಅಂಕ', badgeLesson: 'ಪಾಠ ವಿದ್ವಾಂಸ', badgeLessonDesc: 'ಒಂದು ಸೂಕ್ಷ್ಮ ಪಾಠವನ್ನು ಪೂರ್ಣಗೊಳಿಸಲಾಗಿದೆ' }
+  };
+  return (copy[language] && copy[language][key]) || fallback;
+}
+
+const gameQuestionCopy = {
+  English: { scenario: 'Everyday situation: identify the word for “{meaning}”.', listen: 'Listen to the word, then select the accurate response.', build: 'Compose the word for “{meaning}” by placing its letters in order.', context: 'Read the short situation and choose the most accurate answer.', meaning: 'In this context, what does “{word}” mean?', tray: 'Select letters in order' },
+  Hindi: { scenario: 'रोज़मर्रा की स्थिति: “{meaning}” के लिए शब्द पहचानें।', listen: 'शब्द सुनें, फिर सही उत्तर चुनें।', build: '“{meaning}” के शब्द के अक्षरों को सही क्रम में रखें।', context: 'छोटी स्थिति पढ़ें और सबसे सही उत्तर चुनें।', meaning: 'इस संदर्भ में “{word}” का क्या अर्थ है?', tray: 'अक्षरों को क्रम से चुनें' },
+  Telugu: { scenario: 'రోజువారీ పరిస్థితి: “{meaning}” కోసం పదాన్ని గుర్తించండి।', listen: 'పదాన్ని విని, సరైన సమాధానాన్ని ఎంచుకోండి।', build: '“{meaning}” పదంలోని అక్షరాలను సరైన క్రమంలో అమర్చండి।', context: 'చిన్న పరిస్థితిని చదివి, సరైన సమాధానాన్ని ఎంచుకోండి।', meaning: 'ఈ సందర్భంలో “{word}” అంటే ఏమిటి?', tray: 'అక్షరాలను క్రమంలో ఎంచుకోండి' },
+  Tamil: { scenario: 'அன்றாடச் சூழல்: “{meaning}” என்பதற்கான சொல்லை அடையாளம் காணவும்.', listen: 'சொல்லைக் கேட்டு, சரியான பதிலைத் தேர்ந்தெடுக்கவும்.', build: '“{meaning}” என்பதற்கான சொல்லின் எழுத்துகளைச் சரியான வரிசையில் அமைக்கவும்.', context: 'குறுகிய சூழலைப் படித்து, சரியான பதிலைத் தேர்ந்தெடுக்கவும்.', meaning: 'இந்தச் சூழலில் “{word}” என்பதன் பொருள் என்ன?', tray: 'எழுத்துகளை வரிசையாகத் தேர்ந்தெடுக்கவும்' },
+  Kannada: { scenario: 'ದೈನಂದಿನ ಸಂದರ್ಭ: “{meaning}” ಪದವನ್ನು ಗುರುತಿಸಿ.', listen: 'ಪದವನ್ನು ಆಲಿಸಿ, ಸರಿಯಾದ ಉತ್ತರವನ್ನು ಆಯ್ಕೆಮಾಡಿ.', build: '“{meaning}” ಪದದ ಅಕ್ಷರಗಳನ್ನು ಸರಿಯಾದ ಕ್ರಮದಲ್ಲಿ ಜೋಡಿಸಿ.', context: 'ಸಣ್ಣ ಸಂದರ್ಭವನ್ನು ಓದಿ, ಸರಿಯಾದ ಉತ್ತರವನ್ನು ಆಯ್ಕೆಮಾಡಿ.', meaning: 'ಈ ಸಂದರ್ಭದಲ್ಲಿ “{word}” ಎಂದರೇನು?', tray: 'ಅಕ್ಷರಗಳನ್ನು ಕ್ರಮವಾಗಿ ಆಯ್ಕೆಮಾಡಿ' }
+};
+
+function gameQuestionText(key, values = {}) {
+  const interfaceLanguage = localStorage.getItem('akshara_interface_language') || 'English';
+  let text = (gameQuestionCopy[interfaceLanguage] || gameQuestionCopy.English)[key] || '';
+  Object.entries(values).forEach(([name, value]) => { text = text.replace(`{${name}}`, value); });
+  return text;
+}
+
 function updateInterfaceLanguage(language) {
-  const copy = interfaceCopy[language] || interfaceCopy.English;
+  const copy = { ...currentInterfaceCopy(), ...interfaceCopy.English, ...(interfaceCopy[language] || {}), ...interfaceExtraCopy.English, ...(interfaceExtraCopy[language] || {}), ...interfaceSectionCopy.English, ...(interfaceSectionCopy[language] || {}), ...interfacePracticeCopy.English, ...(interfacePracticeCopy[language] || {}), ...interfaceActivityCopy.English, ...(interfaceActivityCopy[language] || {}), ...interfaceChallengePageCopy.English, ...(interfaceChallengePageCopy[language] || {}), ...interfaceChallengeControlCopy.English, ...(interfaceChallengeControlCopy[language] || {}), ...interfaceHomeAnalyticsCopy.English, ...(interfaceHomeAnalyticsCopy[language] || {}), ...interfaceHomeDetailCopy.English, ...(interfaceHomeDetailCopy[language] || {}), ...interfaceLevelCopy.English, ...(interfaceLevelCopy[language] || {}) };
   document.documentElement.lang = { Hindi: 'hi', Telugu: 'te', Tamil: 'ta', Kannada: 'kn' }[language] || 'en';
   document.querySelectorAll('[data-ui]').forEach(element => {
     const key = element.dataset.ui;
@@ -1051,6 +1164,11 @@ function updateInterfaceLanguage(language) {
   });
   if ($('#interfaceLangSelect')) $('#interfaceLangSelect').value = language;
   localStorage.setItem('akshara_interface_language', language);
+  if (currentLearner) {
+    const learningLanguage = currentLearner.language || 'English';
+    renderPillarContent(currentPillar, learningLanguage);
+    renderFlashcards(learningLanguage);
+  }
 }
 
 if ($('#interfaceLangSelect')) {
@@ -1078,8 +1196,11 @@ async function showDashboard(user) {
   if ($('#dashAvatar')) $('#dashAvatar').textContent = (user.name || 'L').trim()[0].toUpperCase();
   if ($('#dashLevelBadge')) $('#dashLevelBadge').textContent = user.proficiency || 'Beginner';
   if ($('#pathBadgeLevel')) $('#pathBadgeLevel').textContent = user.proficiency || 'Beginner';
-  if ($('#dashStreakVal')) $('#dashStreakVal').textContent = `${user.streakDays || 1} Days Active`;
-  if ($('#dashXpVal')) $('#dashXpVal').textContent = `${user.totalXp || 0} XP Earned`;
+  if ($('#rptLevel')) $('#rptLevel').textContent = user.proficiency || 'Beginner';
+  if ($('#dashStreakVal')) $('#dashStreakVal').textContent = `${user.streakDays || 1} ${dashboardText('daysActive', 'Days Active')}`;
+  if ($('#dashXpVal')) $('#dashXpVal').textContent = `${user.totalXp || 0} ${dashboardText('xpEarned', 'XP Earned')}`;
+  if ($('#goalStatusTitle')) $('#goalStatusTitle').textContent = dashboardText('dailyLesson', 'Daily Micro-Lesson');
+  if ($('#goalText')) $('#goalText').textContent = dashboardText('dailyTarget', 'Daily target active');
 
   const userLang = user.language || 'Hindi';
   if ($('#dashLangSelect')) $('#dashLangSelect').value = userLang;
@@ -1089,7 +1210,7 @@ async function showDashboard(user) {
     const streakRes = await api('/api/learners/me/streak', { method: 'POST' });
     if (streakRes && streakRes.learner) {
       currentLearner = streakRes.learner;
-      if ($('#dashStreakVal')) $('#dashStreakVal').textContent = `${streakRes.learner.streakDays || 1} Days Active`;
+      if ($('#dashStreakVal')) $('#dashStreakVal').textContent = `${streakRes.learner.streakDays || 1} ${dashboardText('daysActive', 'Days Active')}`;
     }
     if (streakRes && streakRes.achievements) {
       renderAchievements(streakRes.achievements);
@@ -1232,6 +1353,16 @@ function showDashboardPage(pageId, updateUrl = true) {
   if (pageId === 'page-lessons') {
     // Continue Learning should land on the learner's actual lesson choices.
     window.setTimeout(() => $('#courseList')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+  }
+  if (pageId === 'page-challenges') {
+    const language = (currentLearner && currentLearner.language) || 'English';
+    if ($('#challengeLevel') && currentLearner) $('#challengeLevel').textContent = currentLearner.proficiency || 'Beginner';
+    renderPillarContent('activities', language);
+  }
+  if (pageId === 'page-quizzes') {
+    const language = (currentLearner && currentLearner.language) || 'English';
+    renderPuzzles(language);
+    loadLivePracticeQuestion();
   }
 }
 
@@ -1401,6 +1532,14 @@ function renderBeginnerMicroLesson(language) {
 document.querySelectorAll('.main-portal-nav .nav-tab').forEach(tab => {
   tab.addEventListener('click', () => { playSound('click'); showDashboardPage(tab.dataset.page); });
 });
+document.querySelectorAll('[data-challenge-quiz]').forEach(button => {
+  button.addEventListener('click', () => {
+    selectedPracticeGame = Number(button.dataset.challengeQuiz);
+    playSound('click');
+    showDashboardPage('page-challenges');
+    $('#challengeDisplay')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
 document.querySelectorAll('[data-go-page]').forEach(button => {
   button.addEventListener('click', () => {
     playSound('click');
@@ -1548,25 +1687,26 @@ function refreshSessionQuestions() {
 async function loadLivePracticeQuestion() {
   const card = $('#liveQuestionCard');
   if (!card || !currentLearner) return;
-  card.innerHTML = '<p>Preparing a new practice question…</p>';
+  card.innerHTML = `<p>${uiText('preparingQuestion')}</p>`;
   try {
     const skills = ['vocab', 'reading', 'writing', 'comprehension'];
     const skill = skills[Math.floor(Math.random() * skills.length)];
-    const data = await api(`/api/v1/practice/questions?skill=${skill}&count=1`);
+    const interfaceLanguage = localStorage.getItem('akshara_interface_language') || 'English';
+    const data = await api(`/api/v1/practice/questions?skill=${skill}&count=1&interface_language=${encodeURIComponent(interfaceLanguage)}`);
     const question = data.questions[0];
-    card.innerHTML = `<h4>✨ Fresh ${skill} challenge</h4><p>${question.question_text}</p><div class="live-question-options">${question.choices.map(choice => `<button type="button" data-live-answer="${choice}">${choice}</button>`).join('')}</div><p class="live-question-feedback"></p>`;
+    card.innerHTML = `<h4>✨ ${uiText('freshQuestion')}</h4><p>${question.question_text}</p><div class="live-question-options">${question.choices.map(choice => `<button type="button" data-live-answer="${choice}">${choice}</button>`).join('')}</div><p class="live-question-feedback"></p>`;
     card.querySelectorAll('[data-live-answer]').forEach(button => button.addEventListener('click', async () => {
       const feedback = card.querySelector('.live-question-feedback');
       card.querySelectorAll('button').forEach(item => item.disabled = true);
       try {
         const result = await api(`/api/v1/practice/questions/${question.token}/answer`, { method: 'POST', body: JSON.stringify({ answer: button.dataset.liveAnswer }) });
-        feedback.textContent = result.message;
+        feedback.textContent = result.correct ? uiText('correctAnswer') : uiText('tryAgain');
         feedback.style.color = result.correct ? '#287257' : '#b05d43';
         if (result.correct) playSound('success'); else playSound('error');
-        const next = document.createElement('button'); next.type = 'button'; next.textContent = 'Next fresh question →'; next.className = 'btn-executive'; next.style.marginTop = '10px'; next.onclick = loadLivePracticeQuestion; card.append(next);
+        const next = document.createElement('button'); next.type = 'button'; next.textContent = uiText('nextQuizQuestion'); next.className = 'btn-executive'; next.style.marginTop = '10px'; next.onclick = loadLivePracticeQuestion; card.append(next);
       } catch (error) { feedback.textContent = error.message; feedback.style.color = '#b05d43'; }
     }));
-  } catch (error) { card.innerHTML = '<p>Sign in to receive a fresh practice question.</p>'; }
+  } catch (error) { card.innerHTML = `<p>${uiText('signInQuiz')}</p>`; }
 }
 
 // ----------------------------------------------------
@@ -1574,6 +1714,7 @@ async function loadLivePracticeQuestion() {
 // ----------------------------------------------------
 let currentPillar = 'reading';
 let pillarIndices = { reading: 0, writing: 0, vocab: 0, comprehension: 0, activities: 0 };
+let selectedPracticeGame = 0;
 
 function rotatePracticeItems(items, offset) {
   if (!items.length) return [];
@@ -1645,7 +1786,7 @@ function renderPillarContent(pillar, language) {
   const flashcardsSection = $('#flashcardsSection');
   if (flashcardsSection) flashcardsSection.classList.toggle('hidden', currentPillar !== 'vocab');
   const rawData = (pillarData[language] || pillarData.default);
-  const container = $('#pillarDisplay');
+  const container = currentPillar === 'activities' ? $('#challengeDisplay') : $('#pillarDisplay');
   if (!container) return;
   document.querySelectorAll('.pillar-tab-pro, .pillar-tab').forEach(t => t.classList.toggle('active', t.dataset.pillar === currentPillar));
 
@@ -1655,12 +1796,12 @@ function renderPillarContent(pillar, language) {
     const list = rawData.reading;
     const item = list[idx] || createContinuousPractice('reading', rawData, idx, language) || list[idx % list.length];
     container.innerHTML = `
-      <h4>${item.title}</h4>
+      <h4>📖 ${uiText('passage')} ${idx + 1}</h4>
       <p style="font-size:18px; font-weight:600; color:#1e5149; margin:8px 0;">"${item.text}"</p>
-      <p style="font-size:13px; color:var(--muted);">${item.help}</p>
+      <p style="font-size:13px; color:var(--muted);">${uiText('listenReading')}</p>
       <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
-        <button id="readAudioBtn" type="button" class="secondary" style="font-size:13px;">🔊 Listen to Reading</button>
-        <button id="nextReadingBtn" type="button" class="btn-executive" style="font-size:13px;">Next Passage ➔</button>
+        <button id="readAudioBtn" type="button" class="secondary" style="font-size:13px;">🔊 ${uiText('listenReading')}</button>
+        <button id="nextReadingBtn" type="button" class="btn-executive" style="font-size:13px;">${uiText('nextPassage')} ➔</button>
       </div>`;
     if ($('#readAudioBtn')) $('#readAudioBtn').onclick = () => { playSound('click'); playSpeech(item.text, language); };
     if ($('#nextReadingBtn')) $('#nextReadingBtn').onclick = () => { playSound('click'); pillarIndices.reading++; renderPillarContent('reading', language); };
@@ -1668,17 +1809,17 @@ function renderPillarContent(pillar, language) {
     const list = rawData.writing;
     const item = list[idx] || createContinuousPractice('writing', rawData, idx, language) || list[idx % list.length];
     container.innerHTML = `
-      <h4>✍️ Writing practice</h4>
+      <h4>✍️ ${uiText('writingPractice')}</h4>
       <p style="font-size:14px; font-weight:600; margin:4px 0 10px; color:#1e5149;">${item.prompt}</p>
-      <p class="writing-help">Choose your ${language} keyboard, listen carefully, then type the word.</p>
-      <input id="writeInput" type="text" lang="${(langCodes[language] || 'en').split('-')[0]}" spellcheck="false" autocapitalize="off" placeholder="Type answer here..." />
+      <p class="writing-help">${uiText('writingHint')}</p>
+      <input id="writeInput" type="text" lang="${(langCodes[language] || 'en').split('-')[0]}" spellcheck="false" autocapitalize="off" placeholder="${uiText('typeAnswer')}" />
       <div style="display:flex; gap:10px; margin-top:8px;">
-        <button id="listenWriteBtn" type="button" class="secondary" style="font-size:13px;">🔊 Listen to word</button>
-        <button id="checkWriteBtn" type="button" class="primary" style="font-size:13px; padding:10px 16px;">Check Answer ✓</button>
-        <button id="nextWriteBtn" type="button" class="btn-executive" style="font-size:13px;">Next Question ➔</button>
+        <button id="listenWriteBtn" type="button" class="secondary" style="font-size:13px;">🔊 ${uiText('listenWord')}</button>
+        <button id="checkWriteBtn" type="button" class="primary" style="font-size:13px; padding:10px 16px;">${uiText('checkAnswer')} ✓</button>
+        <button id="nextWriteBtn" type="button" class="btn-executive" style="font-size:13px;">${uiText('nextQuestion')} ➔</button>
       </div>
       <p id="writeFeedback" class="exercise-feedback"></p>`;
-    if ($('#listenWriteBtn')) $('#listenWriteBtn').onclick = () => { playSound('click'); speakText(item.target, language, message => { const fb = $('#writeFeedback'); if (fb) { fb.textContent = message; fb.style.color = '#52675f'; } }); };
+    if ($('#listenWriteBtn')) $('#listenWriteBtn').onclick = () => { speakText(item.target, language, message => { const fb = $('#writeFeedback'); if (fb) { fb.textContent = message; fb.style.color = '#52675f'; } }); };
     if ($('#checkWriteBtn')) $('#checkWriteBtn').onclick = () => {
       const val = $('#writeInput').value.trim();
       const fb = $('#writeFeedback');
@@ -1698,7 +1839,7 @@ function renderPillarContent(pillar, language) {
     const sets = rawData.vocab;
     const list = sets[idx] || createContinuousPractice('vocab', rawData, idx, language) || sets[idx % sets.length];
     container.innerHTML = `
-      <h4>🔤 Essential vocabulary builder</h4>
+      <h4>🔤 ${uiText('vocabularyBuilder')}</h4>
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; margin-top:10px;">
         ${list.map(v => `
           <div style="background:#f4f9f7; padding:10px 12px; border-radius:8px; border:1px solid #d4e3dc; cursor:pointer;" onclick="playSpeech('${v.word}', '${language}')">
@@ -1707,69 +1848,142 @@ function renderPillarContent(pillar, language) {
           </div>
         `).join('')}
       </div>
-      <button id="nextVocabBtn" type="button" class="btn-executive" style="margin-top:12px; font-size:13px;">Next Vocabulary Set ➔</button>`;
+      <button id="nextVocabBtn" type="button" class="btn-executive" style="margin-top:12px; font-size:13px;">${uiText('nextVocabulary')} ➔</button>`;
     if ($('#nextVocabBtn')) $('#nextVocabBtn').onclick = () => { playSound('click'); pillarIndices.vocab++; renderPillarContent('vocab', language); };
   } else if (currentPillar === 'comprehension') {
     const list = rawData.comprehension;
     const item = list[idx] || createContinuousPractice('comprehension', rawData, idx, language) || list[idx % list.length];
     container.innerHTML = `
-      <h4>🧩 Comprehension practice</h4>
+      <h4>🧩 ${uiText('comprehensionPractice')}</h4>
       <p style="background:#edf7df; padding:12px; border-radius:8px; font-size:14px; color:#234d44; margin:8px 0;">${item.story}</p>
       <p style="font-weight:600; font-size:14px; margin:10px 0 6px;">${item.question}</p>
       <div style="display:flex; gap:8px; flex-wrap:wrap;">
         ${item.options.map(opt => `<button class="comp-opt secondary" style="font-size:13px; padding:8px 12px;">${opt}</button>`).join('')}
       </div>
       <p id="compFeedback" class="exercise-feedback"></p>
-      <button id="nextCompBtn" type="button" class="btn-executive" style="margin-top:12px; font-size:13px;">Next Question ➔</button>`;
+      <button id="nextCompBtn" type="button" class="btn-executive" style="margin-top:12px; font-size:13px;">${uiText('nextQuestion')} ➔</button>`;
     document.querySelectorAll('.comp-opt').forEach(btn => btn.onclick = () => {
       const fb = $('#compFeedback');
       if (btn.textContent === item.correct) {
         playSound('success');
-        fb.textContent = 'Correct! Great comprehension. ✓';
+        fb.textContent = `${uiText('correctAnswer')} ✓`;
         fb.style.color = '#287257';
       } else {
         playSound('error');
-        fb.textContent = 'Not quite — review the passage.';
+        fb.textContent = uiText('tryAgain');
         fb.style.color = '#b05d43';
       }
     });
     if ($('#nextCompBtn')) $('#nextCompBtn').onclick = () => { playSound('click'); pillarIndices.comprehension++; renderPillarContent('comprehension', language); };
   } else if (currentPillar === 'activities') {
     const words = (rawData.vocab || []).flat();
-    const target = words[idx % words.length] || { word: 'Hello', meaning: 'Greeting' };
-    const options = gameOptions(words.length ? words : [target], target, idx);
-    const gameType = idx % 3;
-    const authored = rawData.activities && rawData.activities[idx % rawData.activities.length];
+    const gameType = selectedPracticeGame;
+    // Each game starts on a different vocabulary item. Advancing to the next
+    // challenge changes all five exercises instead of repeating one question.
+    const activityIndex = idx * 5 + gameType;
+    const target = words[activityIndex % words.length] || { word: 'Hello', meaning: 'Greeting' };
+    const options = gameOptions(words.length ? words : [target], target, activityIndex);
+    const authored = rawData.activities && rawData.activities[activityIndex % rawData.activities.length];
+    const learnerLevel = (currentLearner && currentLearner.proficiency) || 'Beginner';
+    const choiceCount = learnerLevel === 'Beginner' ? 2 : 3;
+    const allMeaningChoices = Array.from(new Set(rotatePracticeItems(words, activityIndex + 2).map(item => item.meaning).filter(meaning => meaning && meaning !== target.meaning)));
+    const meaningChoices = shuffleWithSeed([target.meaning, ...shuffleWithSeed(allMeaningChoices, getSessionSeed() + activityIndex * 19).slice(0, 2)], getSessionSeed() + activityIndex * 29);
+    const comprehensionItem = (rawData.comprehension || [])[activityIndex % (rawData.comprehension || []).length];
+    const levelWordOptions = options.slice(0, choiceCount);
+    const levelMeaningChoices = meaningChoices.slice(0, choiceCount);
     const game = gameType === 0 ? {
-      label: 'PICTURE MATCH', title: 'Match the picture', visual: learningVisual(target),
-      prompt: 'Tap the word that matches this picture.', choices: options, correct: target.word
+      label: 'EVERYDAY DECISION', title: 'Choose the useful word',
+      prompt: gameQuestionText('scenario', { meaning: target.meaning }), choices: levelWordOptions, correct: target.word
     } : gameType === 1 ? {
-      label: 'LISTEN & CHOOSE', title: 'Which word did you hear?', visual: '🎧',
-      prompt: 'Tap Listen, then choose the matching word.', choices: options, correct: target.word, audio: target.word
+      label: 'AUDIO RESPONSE', title: 'Identify what you hear',
+      prompt: gameQuestionText('listen'), choices: levelWordOptions, correct: target.word, audio: target.word
+    } : gameType === 2 ? {
+      label: 'WORD COMPOSER', title: 'Arrange the word accurately', mode: 'build',
+      prompt: gameQuestionText('build', { meaning: target.meaning }), correct: target.word
+    } : gameType === 3 && comprehensionItem ? {
+      label: 'CONTEXT READER', title: 'Respond to the situation', story: comprehensionItem.story,
+      prompt: gameQuestionText('context'), choices: comprehensionItem.options, correct: comprehensionItem.correct
     } : {
-      label: 'WORD CHALLENGE', title: authored ? authored.title : 'Quick word challenge', visual: '🧩',
-      prompt: authored ? authored.prompt : `Choose the ${language} word for “${target.meaning}”.`, choices: authored ? authored.options : options, correct: authored ? authored.correct : target.word
+      label: 'MEANING CHECK', title: 'Use the context clue',
+      prompt: gameQuestionText('meaning', { word: target.word }), choices: levelMeaningChoices, correct: target.meaning
     };
+    if (gameType === 4 && (learnerLevel === 'Intermediate' || learnerLevel === 'Advanced') && comprehensionItem) {
+      game.label = 'READING DECISION';
+      game.title = 'Choose the best response';
+      game.story = comprehensionItem.story;
+      game.prompt = gameQuestionText('context');
+      game.choices = comprehensionItem.options;
+      game.correct = comprehensionItem.correct;
+    }
+    const gameNameKeys = ['pictureMatch', 'listenChoose', 'wordChallenge', 'letterHunt', 'quickQuiz'];
+    game.label = uiText(gameNameKeys[gameType]);
+    game.title = uiText(gameNameKeys[gameType]);
+    const wordLetters = Array.from(cleanPracticeWord(target.word)).filter(letter => letter.trim()).slice(0, 8);
+    const missingAt = wordLetters.length > 1 ? 0 : -1;
+    const shuffledLetters = shuffleWithSeed(wordLetters, getSessionSeed() + activityIndex * 37);
     container.innerHTML = `
-      <div class="game-heading"><div><p class="section-eyebrow">${game.label}</p><h4>🎮 ${game.title}</h4></div><span class="status-pill lime">+10 points</span></div>
-      <div class="game-visual">${game.visual}</div>
-      <p class="game-prompt">${game.prompt}</p>
-      ${game.audio ? '<button id="gameListenBtn" type="button" class="secondary game-listen">🔊 Listen</button>' : ''}
-      <div class="game-options">${game.choices.map(option => `<button class="game-option" type="button" data-game-answer="${option === game.correct ? 'correct' : 'wrong'}">${option}</button>`).join('')}</div>
-      <p id="gameFeedback" class="exercise-feedback"></p>
-      <button id="nextActBtn" type="button" class="btn-executive" style="margin-top:12px; font-size:13px;">Play another game ↻</button>`;
-    if ($('#gameListenBtn')) $('#gameListenBtn').onclick = () => { playSound('click'); speakText(game.audio, language, message => { const feedback = $('#gameFeedback'); if (feedback) { feedback.textContent = message; feedback.style.color = '#52675f'; } }); };
-    document.querySelectorAll('[data-game-answer]').forEach(btn => btn.onclick = () => {
+      <div class="game-picker" aria-label="Choose a game">
+        ${['pictureMatch', 'listenChoose', 'wordChallenge', 'letterHunt', 'quickQuiz'].map((name, index) => `<button type="button" class="game-picker-button ${index === gameType ? 'active' : ''}" data-game-type="${index}">${uiText(name)}</button>`).join('')}
+      </div>
+      <section class="game-play-area">
+        <div class="game-heading"><div><p class="section-eyebrow">${game.label}</p><h4>${game.title}</h4></div><div class="game-level-badges"><span class="status-pill green">${learnerLevel}</span><span class="status-pill lime">${uiText('points')}</span></div></div>
+        <div class="game-status-bar"><span class="challenge-marker" aria-hidden="true">●</span><span>${uiText('mission')}</span><strong id="gameStatus">${uiText('ready')}</strong></div>
+        ${game.story ? `<p class="game-story">${game.story}</p>` : ''}
+        <p class="game-prompt">${game.prompt}</p>
+        ${game.audio ? `<button id="gameListenBtn" type="button" class="secondary game-listen">🔊 ${uiText('hearAgain')}</button>` : ''}
+        ${game.mode === 'build' ? `
+          <div id="wordBuildTray" class="word-build-tray" aria-label="Your answer"></div>
+          <div class="game-options letter-options">${shuffledLetters.map((letter, position) => `<button class="game-option" type="button" data-build-letter="${letter}" data-letter-position="${position}">${letter}</button>`).join('')}</div>
+          <div class="game-action-row"><button id="clearBuildBtn" type="button" class="secondary">${uiText('clear')}</button><button id="checkBuildBtn" type="button" class="primary">${uiText('check')}</button></div>`
+          : `<div class="game-options">${game.choices.map(option => `<button class="game-option" type="button" data-game-answer="${option === game.correct ? 'correct' : 'wrong'}">${option}</button>`).join('')}</div>`}
+        <p id="gameFeedback" class="exercise-feedback"></p>
+      </section>
+      <button id="nextActBtn" type="button" class="btn-executive" style="margin-top:12px; font-size:13px;">${uiText('newGameQuestion')}</button>`;
+    document.querySelectorAll('[data-game-type]').forEach(button => button.onclick = () => {
+      selectedPracticeGame = Number(button.dataset.gameType);
+      playSound('click');
+      renderPillarContent('activities', language);
+    });
+    if ($('#gameListenBtn')) $('#gameListenBtn').onclick = () => { speakText(game.audio, language, message => { const feedback = $('#gameFeedback'); if (feedback) { feedback.textContent = message; feedback.style.color = '#52675f'; } }); };
+    if (game.mode === 'build') {
+      const builtLetters = [];
+      const tray = $('#wordBuildTray');
+      const drawBuiltWord = () => { if (tray) tray.textContent = builtLetters.length ? builtLetters.join('') : gameQuestionText('tray'); };
+      drawBuiltWord();
+      document.querySelectorAll('[data-build-letter]').forEach(btn => btn.onclick = () => {
+        builtLetters.push(btn.dataset.buildLetter);
+        btn.disabled = true;
+        drawBuiltWord();
+        playSound('click');
+      });
+      if ($('#clearBuildBtn')) $('#clearBuildBtn').onclick = () => {
+        builtLetters.length = 0;
+        document.querySelectorAll('[data-build-letter]').forEach(btn => { btn.disabled = false; });
+        drawBuiltWord();
+      };
+      if ($('#checkBuildBtn')) $('#checkBuildBtn').onclick = () => {
+        const feedback = $('#gameFeedback');
+        if (builtLetters.join('') === cleanPracticeWord(game.correct)) {
+          playSound('success'); feedback.textContent = uiText('greatRound'); feedback.style.color = '#287257';
+          $('#gameStatus').textContent = uiText('missionComplete'); $('.game-play-area')?.classList.add('game-won');
+          document.querySelectorAll('[data-build-letter]').forEach(btn => { btn.disabled = true; });
+          api('/api/practice/submit', { method: 'POST', body: JSON.stringify({ points: 10 }) }).catch(() => {});
+        } else { playSound('error'); feedback.textContent = uiText('niceTryGame'); feedback.style.color = '#b05d43'; }
+      };
+    }
+    document.querySelectorAll('[data-game-answer], [data-missing-answer]').forEach(btn => btn.onclick = () => {
       const fb = $('#gameFeedback');
-      if (btn.dataset.gameAnswer === 'correct') {
+      if ((btn.dataset.gameAnswer || btn.dataset.missingAnswer) === 'correct') {
         playSound('success');
-        fb.textContent = 'Great job! You won this round. ✓ (+10 points)';
+        fb.textContent = uiText('greatRound');
         fb.style.color = '#287257';
+        $('#gameStatus').textContent = uiText('missionComplete');
+        $('.game-play-area')?.classList.add('game-won');
         document.querySelectorAll('[data-game-answer]').forEach(option => option.disabled = true);
         api('/api/practice/submit', { method: 'POST', body: JSON.stringify({ points: 10 }) }).catch(() => {});
       } else {
         playSound('error');
-        fb.textContent = 'Nice try! Look, listen, and choose again.';
+        fb.textContent = uiText('niceTryGame');
         fb.style.color = '#b05d43';
       }
     });
@@ -1787,18 +2001,29 @@ function renderFlashcards(language) {
     <div class="flashcard-item" onclick="this.classList.toggle('flipped'); playSound('click');">
       <div class="flashcard-inner">
         <div class="flashcard-front">
-          <span class="fc-badge">${language.toUpperCase()} WORD ${idx + 1}</span>
+          <span class="fc-badge">${language.toUpperCase()} ${uiText('languageWord')} ${idx + 1}</span>
           <h3>${item.word}</h3>
-          <p class="fc-hint">Click card to flip ↺</p>
+          <p class="fc-hint">${uiText('cardTap')}</p>
         </div>
         <div class="flashcard-back">
-          <span class="fc-badge">MEANING</span>
+          <span class="fc-badge">${uiText('meaning')}</span>
           <h4>${item.meaning}</h4>
-          <button type="button" class="btn-executive" style="margin-top:8px; font-size:11px;" onclick="event.stopPropagation(); playSpeech('${item.word}', '${language}')">🔊 Listen</button>
+          <button type="button" class="btn-executive" style="margin-top:8px; font-size:11px;" onclick="event.stopPropagation(); playSpeech('${item.word}', '${language}')">🔊 ${uiText('listen')}</button>
         </div>
       </div>
     </div>
   `).join('');
+}
+
+let activeSpeechAudio = null;
+
+function stopActiveSpeech() {
+  if (activeSpeechAudio) {
+    activeSpeechAudio.pause();
+    activeSpeechAudio.currentTime = 0;
+    activeSpeechAudio = null;
+  }
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 }
 
 function speakWithBrowser(text, language, onStatus) {
@@ -1826,12 +2051,17 @@ function speakWithBrowser(text, language, onStatus) {
 }
 
 async function speakText(text, language, onStatus) {
+  // One learner action should produce one pronunciation only. Stop a previous
+  // Sarvam/browser utterance before beginning the next one.
+  stopActiveSpeech();
   try {
     const result = await api('/api/voice/synthesize', { method: 'POST', body: JSON.stringify({ text, language }) });
     if (result.audio_base64) {
       const audio = new Audio(`data:${result.mime_type || 'audio/wav'};base64,${result.audio_base64}`);
+      activeSpeechAudio = audio;
       audio.onplay = () => { if (onStatus) onStatus('🔊 Playing Sarvam AI pronunciation...'); };
-      audio.onerror = () => { if (onStatus) onStatus('Sarvam audio could not play. Trying browser speech…'); speakWithBrowser(text, language, onStatus); };
+      audio.onended = () => { if (activeSpeechAudio === audio) activeSpeechAudio = null; };
+      audio.onerror = () => { if (activeSpeechAudio === audio) activeSpeechAudio = null; if (onStatus) onStatus('Sarvam audio could not play. Trying browser speech…'); speakWithBrowser(text, language, onStatus); };
       await audio.play();
       return true;
     }
@@ -1998,11 +2228,11 @@ function renderAchievements(achievements) {
   if (!container) return;
 
   const defaultBadges = [
-    { badge_key: 'first_step', badge_name: '🌟 Neo-Learner Pioneer', desc: 'Registered on Akshara Portal' },
-    { badge_key: 'streak_3', badge_name: '🔥 3-Day Streak Master', desc: 'Learned 3 days continuously' },
-    { badge_key: 'puzzle_master', badge_name: '🧩 Puzzle Master', desc: 'Completed literacy puzzles' },
-    { badge_key: 'voice_star', badge_name: '🎙️ Voice Star', desc: 'Achieved 85%+ pronunciation score' },
-    { badge_key: 'lesson_1', badge_name: '📚 Module Scholar', desc: 'Completed a micro-lesson module' }
+    { badge_key: 'first_step', icon: '🌟', name: 'badgeFirst', desc_key: 'badgeFirstDesc', fallback_name: 'Neo-Learner Pioneer', fallback_desc: 'Registered on Akshara Portal' },
+    { badge_key: 'streak_3', icon: '🔥', name: 'badgeStreak', desc_key: 'badgeStreakDesc', fallback_name: '3-Day Streak Master', fallback_desc: 'Learned 3 days continuously' },
+    { badge_key: 'puzzle_master', icon: '🧩', name: 'badgePuzzle', desc_key: 'badgePuzzleDesc', fallback_name: 'Puzzle Master', fallback_desc: 'Completed literacy puzzles' },
+    { badge_key: 'voice_star', icon: '🎙️', name: 'badgeVoice', desc_key: 'badgeVoiceDesc', fallback_name: 'Voice Star', fallback_desc: 'Achieved 85%+ pronunciation score' },
+    { badge_key: 'lesson_1', icon: '📚', name: 'badgeLesson', desc_key: 'badgeLessonDesc', fallback_name: 'Module Scholar', fallback_desc: 'Completed a micro-lesson module' }
   ];
 
   const unlockedKeys = new Set((achievements || []).map(a => a.badge_key));
@@ -2011,10 +2241,10 @@ function renderAchievements(achievements) {
     const isUnlocked = unlockedKeys.has(b.badge_key);
     return `
       <div class="badge-card ${isUnlocked ? 'unlocked' : 'locked'}">
-        <div class="badge-icon">${b.badge_name.split(' ')[0]}</div>
-        <h5>${b.badge_name}</h5>
-        <p>${b.desc}</p>
-        <span class="badge-status">${isUnlocked ? 'Unlocked ✓' : 'Locked 🔒'}</span>
+        <div class="badge-icon">${b.icon}</div>
+        <h5>${dashboardText(b.name, b.fallback_name)}</h5>
+        <p>${dashboardText(b.desc_key, b.fallback_desc)}</p>
+        <span class="badge-status">${isUnlocked ? dashboardText('unlocked', 'Unlocked ✓') : dashboardText('locked', 'Locked 🔒')}</span>
       </div>
     `;
   }).join('');
@@ -2170,3 +2400,12 @@ api('/api/learners/me')
     else startAssessment(learner);
   })
   .catch(() => {});
+// Register the offline shell only in browsers that support service workers.
+// API data is deliberately not cached, so learners always receive fresh data.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+      // The app must remain usable even if offline installation is unavailable.
+    });
+  });
+}

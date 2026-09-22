@@ -17,6 +17,13 @@ try:
     from sarvamai import SarvamAI
 except ImportError:
     SarvamAI = None
+try:
+    import psycopg
+    from psycopg.rows import dict_row
+except ImportError:
+    psycopg = None
+    dict_row = None
+DATABASE_INTEGRITY_ERRORS = (sqlite3.IntegrityError,) + ((psycopg.errors.UniqueViolation,) if psycopg else ())
 from services.adaptive_engine import adaptive_profile, generate_personalized_lesson, proficiency_prediction, record_skill_attempt, recommendations_for, save_baseline
 
 app = Flask(__name__, static_folder=".", static_url_path="")
@@ -30,6 +37,10 @@ GOALS = {"Reading", "Writing", "Speaking", "Everyday communication"}
 LANGUAGE_CODES = {"English": "en", "Hindi": "hi", "Telugu": "te", "Tamil": "ta", "Kannada": "kn", "Malayalam": "ml", "Bengali": "bn", "Marathi": "mr"}
 LANGUAGE_GREETINGS = {"English": "hello", "Hindi": "नमस्ते", "Telugu": "నమస్కారం", "Tamil": "வணக்கம்", "Kannada": "ನಮಸ್ಕಾರ", "Malayalam": "നമസ്കാരം", "Bengali": "নমস্কার", "Marathi": "नमस्कार"}
 SARVAM_LANGUAGE_CODES = {"English": "en-IN", "Hindi": "hi-IN", "Telugu": "te-IN", "Tamil": "ta-IN", "Kannada": "kn-IN", "Malayalam": "ml-IN", "Bengali": "bn-IN", "Marathi": "mr-IN"}
+# Local development credentials. Set AKSHARA_ADMIN_EMAIL and
+# AKSHARA_ADMIN_PASSWORD before deployment; never use these defaults publicly.
+ADMIN_EMAIL = os.environ.get("AKSHARA_ADMIN_EMAIL", "admin@akshara.local").strip().lower()
+ADMIN_PASSWORD = os.environ.get("AKSHARA_ADMIN_PASSWORD", "AksharaAdmin123!")
 PRACTICE_VOCABULARY = {
     "English": [("hello", "greeting"), ("water", "water"), ("home", "home"), ("book", "book"), ("school", "school"), ("friend", "friend"), ("food", "food"), ("pen", "pen"), ("tree", "tree"), ("road", "road"), ("mother", "mother"), ("sun", "sun")],
     "Hindi": [("नमस्ते", "greeting"), ("पानी", "water"), ("घर", "home"), ("किताब", "book"), ("स्कूल", "school"), ("दोस्त", "friend"), ("खाना", "food"), ("कलम", "pen"), ("पेड़", "tree"), ("रास्ता", "road"), ("माँ", "mother"), ("सूरज", "sun")],
@@ -40,10 +51,82 @@ PRACTICE_VOCABULARY = {
     "Bengali": [("নমস্কার", "greeting"), ("জল", "water"), ("ঘর", "home"), ("বই", "book")],
     "Marathi": [("नमस्कार", "greeting"), ("पाणी", "water"), ("घर", "home"), ("पुस्तक", "book")],
 }
+PRACTICE_QUESTION_TEMPLATES = {
+    "English": ["Which {language} word means “{meaning}”?", "Choose the correct {language} word for “{meaning}”", "Read the options and select “{meaning}” in {language}."],
+    "Hindi": ["“{meaning}” का {language} शब्द कौन सा है?", "“{meaning}” के लिए सही {language} शब्द चुनें।", "विकल्प पढ़ें और {language} में “{meaning}” चुनें।"],
+    "Telugu": ["“{meaning}” కు {language} పదం ఏది?", "“{meaning}” కోసం సరైన {language} పదాన్ని ఎంచుకోండి।", "ఎంపికలను చదివి {language} లో “{meaning}” ఎంచుకోండి।"],
+    "Tamil": ["“{meaning}” என்பதற்கான {language} சொல் எது?", "“{meaning}” என்பதற்கான சரியான {language} சொல்லைத் தேர்ந்தெடுக்கவும்.", "விருப்பங்களைப் படித்து {language} இல் “{meaning}” என்பதைத் தேர்ந்தெடுக்கவும்."],
+    "Kannada": ["“{meaning}” ಗೆ {language} ಪದ ಯಾವುದು?", "“{meaning}” ಗೆ ಸರಿಯಾದ {language} ಪದವನ್ನು ಆಯ್ಕೆಮಾಡಿ.", "ಆಯ್ಕೆಗಳನ್ನು ಓದಿ {language} ನಲ್ಲಿ “{meaning}” ಆಯ್ಕೆಮಾಡಿ."]
+}
+
+POSTGRES_ID_TABLES = {"learners", "languages", "courses", "topics", "lessons", "assessments", "questions", "answers", "assessment_results", "learning_progress", "recommendations", "social_accounts", "voice_assessments", "password_resets", "learner_achievements", "learning_events"}
+
+class PostgresResult:
+    """Expose the small sqlite cursor interface used by the existing REST API."""
+    def __init__(self, cursor, returns_id=False):
+        self.cursor = cursor
+        self.returns_id = returns_id
+        self._id_row = None
+
+    def fetchone(self):
+        return self.cursor.fetchone()
+
+    def fetchall(self):
+        return self.cursor.fetchall()
+
+    @property
+    def lastrowid(self):
+        if not self.returns_id:
+            return None
+        if self._id_row is None:
+            self._id_row = self.cursor.fetchone()
+        return self._id_row["id"] if self._id_row else None
+
+class PostgresDatabase:
+    """Translate this project's SQLite-style parameter syntax to PostgreSQL."""
+    def __init__(self, url):
+        if psycopg is None:
+            raise RuntimeError("PostgreSQL is configured but psycopg is not installed. Run pip install -r requirements.txt.")
+        self.connection = psycopg.connect(url, row_factory=dict_row)
+
+    @staticmethod
+    def _translate(sql, return_id=False):
+        translated = sql.replace("?", "%s")
+        translated = translated.replace("INSERT OR IGNORE INTO", "INSERT INTO")
+        if "INSERT OR IGNORE INTO" in sql:
+            translated += " ON CONFLICT DO NOTHING"
+        translated = translated.replace("DATE('now', '-6 days')", "CURRENT_DATE - INTERVAL '6 days'")
+        if return_id:
+            translated += " RETURNING id"
+        return translated
+
+    def execute(self, sql, parameters=()):
+        table = re.match(r"\s*INSERT(?: OR IGNORE)? INTO\s+([a-z_]+)", sql, re.IGNORECASE)
+        returns_id = bool(table and table.group(1).lower() in POSTGRES_ID_TABLES)
+        cursor = self.connection.execute(self._translate(sql, returns_id), parameters)
+        return PostgresResult(cursor, returns_id)
+
+    def executemany(self, sql, parameters):
+        return self.connection.cursor().executemany(self._translate(sql), parameters)
+
+    def executescript(self, script):
+        for statement in script.split(";"):
+            if statement.strip():
+                self.connection.execute(statement)
+
+    def commit(self):
+        self.connection.commit()
+
+    def close(self):
+        self.connection.close()
 
 def get_db():
     if "db" not in g:
-        g.db = sqlite3.connect(app.config["DATABASE"]); g.db.row_factory = sqlite3.Row
+        database_url = os.environ.get("DATABASE_URL", "")
+        if database_url.startswith(("postgres://", "postgresql://")):
+            g.db = PostgresDatabase(database_url)
+        else:
+            g.db = sqlite3.connect(app.config["DATABASE"]); g.db.row_factory = sqlite3.Row
         ensure_schema(g.db)
     return g.db
 
@@ -53,13 +136,19 @@ def close_db(_error):
     if db is not None: db.close()
 
 def ensure_schema(db):
-    """Create or update the local SQLite schema safely on application startup."""
+    """Create tables and starter curriculum in PostgreSQL or local SQLite."""
     # Keep a checked-in schema for fresh deployments and database tooling. The
     # additive migrations below preserve compatibility with older Akshara files.
-    schema_path = os.path.join(app.root_path, "database", "schema.sql")
+    is_postgres = isinstance(db, PostgresDatabase)
+    schema_path = os.path.join(app.root_path, "database", "postgres_schema.sql" if is_postgres else "schema.sql")
     if os.path.exists(schema_path):
         with open(schema_path, encoding="utf-8") as schema_file:
             db.executescript(schema_file.read())
+    if is_postgres:
+        db.executemany("INSERT INTO languages (name, code) VALUES (?, ?) ON CONFLICT (name) DO NOTHING", LANGUAGE_CODES.items())
+        seed_learning_data(db)
+        db.commit()
+        return
     db.execute("PRAGMA foreign_keys = ON")
     # Older Akshara databases may already have the base tables.  The checked-in
     # schema above is the single source of truth for fresh tables; only additive
@@ -146,7 +235,7 @@ def seed_learning_data(db):
 def serialize_rows(rows):
     return [dict(row) for row in rows]
 
-def generate_practice_question(language, skill):
+def generate_practice_question(language, skill, interface_language="English"):
     """Generate a new literacy question from a safe, curriculum-controlled bank.
 
     A fresh random token and order make the stream unbounded without storing an
@@ -158,15 +247,8 @@ def generate_practice_question(language, skill):
     distractors = [candidate_word for candidate_word, candidate_meaning in vocabulary if candidate_meaning != meaning]
     choices = [word, *chooser.sample(distractors, k=min(2, len(distractors)))]
     chooser.shuffle(choices)
-    prompts = [
-        f"Which {language} word means “{meaning}”?",
-        f"Choose the correct {language} word for “{meaning}”.",
-        f"Read the options. Select “{meaning}” in {language}.",
-    ]
-    if skill == "comprehension":
-        prompts.extend([f"You see the word “{meaning}” in a short sentence. Which {language} option matches it?", f"Read carefully: select the {language} word for “{meaning}”."])
-    elif skill == "writing":
-        prompts.extend([f"Before writing, identify the correct {language} word for “{meaning}”.", f"Choose the spelling you would write for “{meaning}” in {language}."])
+    templates = PRACTICE_QUESTION_TEMPLATES.get(interface_language, PRACTICE_QUESTION_TEMPLATES["English"])
+    prompts = [template.format(language=language, meaning=meaning) for template in templates]
     return {"skill": skill, "question_text": chooser.choice(prompts), "choices": choices, "correct_answer": word}
 
 def init_db():
@@ -237,6 +319,15 @@ def current_learner(view):
         return view(learner, *args, **kwargs)
     return wrapped
 
+def admin_required(view):
+    """Protect platform-management routes with a separate administrator session."""
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not session.get("is_admin"):
+            return jsonify(error="Administrator authentication required."), 401
+        return view(*args, **kwargs)
+    return wrapped
+
 def validate(data, include_password=False, require_learning_preferences=True):
     required = {"name", "age", "language"} | ({"proficiency", "goal"} if require_learning_preferences else set()) | ({"email", "password"} if include_password else set())
     if any(not str(data.get(key, "")).strip() for key in required): return "Please provide all required learner information."
@@ -251,6 +342,172 @@ def validate(data, include_password=False, require_learning_preferences=True):
 @app.get("/")
 def home(): return send_from_directory(app.root_path, "index.html")
 
+@app.get("/admin")
+def admin_home(): return send_from_directory(app.root_path, "admin.html")
+
+@app.get("/admin/curriculum")
+def admin_curriculum_home(): return send_from_directory(app.root_path, "admin_curriculum.html")
+
+@app.get("/admin/activity")
+def admin_activity_home(): return send_from_directory(app.root_path, "admin_activity.html")
+
+@app.get("/admin/users")
+def admin_users_home(): return send_from_directory(app.root_path, "admin_users.html")
+
+@app.get("/api/admin/session")
+def admin_session_status():
+    """Return a safe login status so the admin page need not probe protected APIs."""
+    if session.get("is_admin"):
+        return jsonify(authenticated=True, admin={"email": ADMIN_EMAIL})
+    return jsonify(authenticated=False)
+
+@app.post("/api/admin/login")
+def admin_login():
+    data = request.get_json(silent=True) or {}
+    email = str(data.get("email", "")).strip().lower()
+    password = str(data.get("password", ""))
+    if email != ADMIN_EMAIL or not secrets.compare_digest(password, ADMIN_PASSWORD):
+        return jsonify(error="Administrator email or password is incorrect."), 401
+    session.clear()
+    session["is_admin"] = True
+    return jsonify(admin={"email": ADMIN_EMAIL})
+
+@app.post("/api/admin/logout")
+@admin_required
+def admin_logout():
+    session.clear()
+    return "", 204
+
+@app.get("/api/admin/overview")
+@admin_required
+def admin_overview():
+    db = get_db()
+    totals = {
+        "learners": db.execute("SELECT COUNT(*) AS value FROM learners").fetchone()["value"],
+        "assessments_completed": db.execute("SELECT COUNT(*) AS value FROM learners WHERE assessment_completed=1").fetchone()["value"],
+        "lessons_completed": db.execute("SELECT COUNT(*) AS value FROM learning_progress WHERE completion_percent >= 100").fetchone()["value"],
+        "practice_attempts": db.execute("SELECT COUNT(*) AS value FROM learning_events").fetchone()["value"],
+    }
+    languages = serialize_rows(db.execute("SELECT language, COUNT(*) AS learner_count FROM learners GROUP BY language ORDER BY learner_count DESC, language").fetchall())
+    levels = serialize_rows(db.execute("SELECT proficiency, COUNT(*) AS learner_count FROM learners GROUP BY proficiency ORDER BY learner_count DESC, proficiency").fetchall())
+    recent = serialize_rows(db.execute("""
+        SELECT l.id, l.name, l.email, l.language, l.proficiency, l.assessment_completed,
+               l.total_xp, l.login_count, l.last_login_date,
+               COALESCE(ROUND(AVG(lp.completion_percent), 1), 0) AS progress_percent
+        FROM learners l
+        LEFT JOIN learning_progress lp ON lp.learner_id=l.id
+        GROUP BY l.id
+        ORDER BY l.id DESC
+        LIMIT 100
+    """).fetchall())
+    curriculum_totals = {
+        "courses": db.execute("SELECT COUNT(*) AS value FROM courses").fetchone()["value"],
+        "topics": db.execute("SELECT COUNT(*) AS value FROM topics").fetchone()["value"],
+        "lessons": db.execute("SELECT COUNT(*) AS value FROM lessons").fetchone()["value"],
+    }
+    recent_lessons = serialize_rows(db.execute("""
+        SELECT lessons.id, lessons.title, lessons.estimated_minutes, topics.title AS topic_title,
+               courses.title AS course_title, languages.name AS language, courses.proficiency_level
+        FROM lessons
+        JOIN topics ON topics.id = lessons.topic_id
+        JOIN courses ON courses.id = topics.course_id
+        JOIN languages ON languages.id = courses.language_id
+        ORDER BY lessons.id DESC
+        LIMIT 8
+    """).fetchall())
+    return jsonify(totals=totals, curriculum_totals=curriculum_totals, languages=languages, levels=levels, learners=recent, recent_lessons=recent_lessons)
+
+@app.get("/api/admin/curriculum")
+@admin_required
+def admin_curriculum():
+    db = get_db()
+    languages = serialize_rows(db.execute("SELECT id, name FROM languages ORDER BY id").fetchall())
+    courses = serialize_rows(db.execute("""
+        SELECT courses.id, courses.language_id, courses.title, courses.description, courses.proficiency_level,
+               languages.name AS language
+        FROM courses JOIN languages ON languages.id = courses.language_id
+        ORDER BY languages.name, courses.proficiency_level, courses.title
+    """).fetchall())
+    topics = serialize_rows(db.execute("SELECT id, course_id, title, sequence_no FROM topics ORDER BY course_id, sequence_no").fetchall())
+    return jsonify(languages=languages, courses=courses, topics=topics)
+
+@app.get("/api/admin/activity")
+@admin_required
+def admin_activity():
+    db = get_db()
+    signups = serialize_rows(db.execute("SELECT id, name, email FROM learners ORDER BY id DESC LIMIT 8").fetchall())
+    logins = serialize_rows(db.execute("SELECT name, email, last_login_date, login_count FROM learners WHERE last_login_date IS NOT NULL ORDER BY last_login_date DESC LIMIT 8").fetchall())
+    events = serialize_rows(db.execute("""
+        SELECT learners.name, learners.email, learning_events.event_type, learning_events.skill,
+               learning_events.score, learning_events.created_at
+        FROM learning_events JOIN learners ON learners.id=learning_events.learner_id
+        ORDER BY learning_events.id DESC LIMIT 8
+    """).fetchall())
+    return jsonify(signups=signups, logins=logins, events=events)
+
+@app.get("/api/admin/users")
+@admin_required
+def admin_users():
+    db = get_db()
+    users = serialize_rows(db.execute("""
+        SELECT l.id, l.name, l.email, l.age, l.language, l.proficiency, l.goal,
+               l.assessment_completed, l.total_xp, l.login_count, l.last_login_date,
+               COALESCE(ROUND(AVG(lp.completion_percent), 1), 0) AS progress_percent
+        FROM learners l LEFT JOIN learning_progress lp ON lp.learner_id=l.id
+        GROUP BY l.id ORDER BY l.id DESC LIMIT 200
+    """).fetchall())
+    return jsonify(users=users)
+
+@app.post("/api/admin/courses")
+@admin_required
+def admin_create_course():
+    data = request.get_json(silent=True) or {}
+    title = str(data.get("title", "")).strip()
+    level = str(data.get("proficiency_level", "Beginner")).strip()
+    description = str(data.get("description", "")).strip()
+    try:
+        language_id = int(data.get("language_id"))
+    except (TypeError, ValueError):
+        language_id = 0
+    if not title or level not in LEVELS or not get_db().execute("SELECT 1 FROM languages WHERE id=?", (language_id,)).fetchone():
+        return jsonify(error="Provide a course title, valid language, and proficiency level."), 400
+    db = get_db()
+    cursor = db.execute("INSERT INTO courses (language_id, title, description, proficiency_level) VALUES (?,?,?,?)", (language_id, title, description or None, level))
+    db.commit()
+    return jsonify(course={"id": cursor.lastrowid, "title": title}), 201
+
+@app.post("/api/admin/lessons")
+@admin_required
+def admin_create_lesson():
+    data = request.get_json(silent=True) or {}
+    title = str(data.get("title", "")).strip()
+    content = str(data.get("content", "")).strip()
+    topic_title = str(data.get("topic_title", "")).strip()
+    try:
+        course_id = int(data.get("course_id"))
+        topic_id = int(data["topic_id"]) if data.get("topic_id") else None
+        minutes = int(data.get("estimated_minutes") or 5)
+    except (TypeError, ValueError):
+        return jsonify(error="Choose a course and enter a valid lesson duration."), 400
+    if not title or minutes < 1 or minutes > 180:
+        return jsonify(error="Enter a lesson title and a duration from 1 to 180 minutes."), 400
+    db = get_db()
+    if not db.execute("SELECT 1 FROM courses WHERE id=?", (course_id,)).fetchone():
+        return jsonify(error="The selected course no longer exists."), 404
+    if topic_id:
+        topic = db.execute("SELECT id FROM topics WHERE id=? AND course_id=?", (topic_id, course_id)).fetchone()
+        if not topic:
+            return jsonify(error="Choose a topic that belongs to the selected course."), 400
+    else:
+        if not topic_title:
+            return jsonify(error="Choose an existing topic or enter a name for a new topic."), 400
+        sequence = db.execute("SELECT COALESCE(MAX(sequence_no), 0) + 1 AS value FROM topics WHERE course_id=?", (course_id,)).fetchone()["value"]
+        topic_id = db.execute("INSERT INTO topics (course_id, title, sequence_no) VALUES (?,?,?)", (course_id, topic_title, sequence)).lastrowid
+    sequence = db.execute("SELECT COALESCE(MAX(sequence_no), 0) + 1 AS value FROM lessons WHERE topic_id=?", (topic_id,)).fetchone()["value"]
+    cursor = db.execute("INSERT INTO lessons (topic_id, title, content, sequence_no, estimated_minutes) VALUES (?,?,?,?,?)", (topic_id, title, content or None, sequence, minutes))
+    db.commit()
+    return jsonify(lesson={"id": cursor.lastrowid, "title": title, "topic_id": topic_id}), 201
+
 @app.post("/api/auth/register")
 def register():
     data = request.get_json(silent=True) or {}; error = validate(data, include_password=True, require_learning_preferences=False)
@@ -258,7 +515,7 @@ def register():
     db = get_db()
     try:
         cursor = db.execute("INSERT INTO learners (name,age,email,password_hash,language,proficiency,goal) VALUES (?,?,?,?,?,?,?)", (data["name"].strip(), data["age"], data["email"].strip().lower(), generate_password_hash(data["password"], method="pbkdf2:sha256"), data["language"], "Beginner", "Everyday communication")); db.commit()
-    except sqlite3.IntegrityError: return jsonify(error="An account already exists with this email."), 409
+    except DATABASE_INTEGRITY_ERRORS: return jsonify(error="An account already exists with this email."), 409
     language_id = db.execute("SELECT id FROM languages WHERE name=?", (data["language"],)).fetchone()["id"]
     db.execute("INSERT OR IGNORE INTO learner_languages (learner_id, language_id) VALUES (?, ?)", (cursor.lastrowid, language_id)); db.commit()
     session["learner_id"] = cursor.lastrowid
@@ -460,9 +717,12 @@ def generate_practice_questions(learner):
         return jsonify(error="Count must be a whole number."), 400
     if not 1 <= count <= 10:
         return jsonify(error="Request between 1 and 10 questions at a time."), 400
+    interface_language = str(request.args.get("interface_language", "English")).strip()
+    if interface_language not in PRACTICE_QUESTION_TEMPLATES:
+        interface_language = "English"
     db = get_db(); generated = []
     for _ in range(count):
-        question = generate_practice_question(learner["language"], skill)
+        question = generate_practice_question(learner["language"], skill, interface_language)
         token = secrets.token_urlsafe(18)
         db.execute("INSERT INTO generated_practice_questions (token,learner_id,skill,question_text,choices_json,correct_answer) VALUES (?,?,?,?,?,?)", (token, learner["id"], skill, question["question_text"], json.dumps(question["choices"], ensure_ascii=False), question["correct_answer"]))
         generated.append({"token": token, "skill": skill, "question_text": question["question_text"], "choices": question["choices"]})
@@ -789,7 +1049,7 @@ def health():
             service="Akshara AI literacy API",
             database={"status": "ok", "learners": learners, "lessons": lessons},
         )
-    except sqlite3.Error as error:
+    except Exception as error:
         return jsonify(status="degraded", service="Akshara AI literacy API", database={"status": "error", "message": str(error)}), 503
 
 with app.app_context(): init_db()

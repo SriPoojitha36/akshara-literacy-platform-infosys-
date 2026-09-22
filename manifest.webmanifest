@@ -1,0 +1,17 @@
+{
+  "name": "Akshara Literacy Learning",
+  "short_name": "Akshara",
+  "description": "AI-powered literacy support for neo-learners.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5faf4",
+  "theme_color": "#1b4d3e",
+  "icons": [
+    {
+      "src": "/icons/akshara-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

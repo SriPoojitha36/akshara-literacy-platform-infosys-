@@ -1,2 +1,4 @@
 Flask>=3.0,<4.0
 sarvamai>=0.1
+gunicorn>=21.2,<24.0
+psycopg[binary]>=3.2,<4.0
