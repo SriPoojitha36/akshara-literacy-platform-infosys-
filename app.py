@@ -58,6 +58,9 @@ PRACTICE_QUESTION_TEMPLATES = {
     "Tamil": ["“{meaning}” என்பதற்கான {language} சொல் எது?", "“{meaning}” என்பதற்கான சரியான {language} சொல்லைத் தேர்ந்தெடுக்கவும்.", "விருப்பங்களைப் படித்து {language} இல் “{meaning}” என்பதைத் தேர்ந்தெடுக்கவும்."],
     "Kannada": ["“{meaning}” ಗೆ {language} ಪದ ಯಾವುದು?", "“{meaning}” ಗೆ ಸರಿಯಾದ {language} ಪದವನ್ನು ಆಯ್ಕೆಮಾಡಿ.", "ಆಯ್ಕೆಗಳನ್ನು ಓದಿ {language} ನಲ್ಲಿ “{meaning}” ಆಯ್ಕೆಮಾಡಿ."]
 }
+VOICE_TTS_CACHE = {}
+VOICE_TTS_CACHE_TTL_SECONDS = 60 * 60 * 12
+VOICE_TTS_CACHE_LIMIT = 200
 
 POSTGRES_ID_TABLES = {"learners", "languages", "courses", "topics", "lessons", "assessments", "questions", "answers", "assessment_results", "learning_progress", "recommendations", "social_accounts", "voice_assessments", "password_resets", "learner_achievements", "learning_events"}
 
@@ -910,6 +913,10 @@ def synthesize_voice(learner):
     api_key = os.environ.get("SARVAM_API_KEY")
     if not api_key:
         return jsonify(error="Sarvam TTS is not configured. Set SARVAM_API_KEY and restart Flask."), 503
+    cache_key = (language, text, os.environ.get("SARVAM_TTS_SPEAKER", "shubh"))
+    cached = VOICE_TTS_CACHE.get(cache_key)
+    if cached and time.time() - cached["created_at"] < VOICE_TTS_CACHE_TTL_SECONDS:
+        return jsonify(audio_base64=cached["audio_base64"], mime_type="audio/wav", provider="sarvam-cache")
     try:
         client = SarvamAI(api_subscription_key=api_key)
         response = client.text_to_speech.convert(
@@ -923,7 +930,11 @@ def synthesize_voice(learner):
             audios = response.get("audios")
         if not audios:
             return jsonify(error="Sarvam did not return audio."), 502
-        return jsonify(audio_base64="".join(audios), mime_type="audio/wav", provider="sarvam")
+        audio_base64 = "".join(audios)
+        if len(VOICE_TTS_CACHE) >= VOICE_TTS_CACHE_LIMIT:
+            VOICE_TTS_CACHE.pop(next(iter(VOICE_TTS_CACHE)))
+        VOICE_TTS_CACHE[cache_key] = {"audio_base64": audio_base64, "created_at": time.time()}
+        return jsonify(audio_base64=audio_base64, mime_type="audio/wav", provider="sarvam")
     except Exception as error:
         app.logger.warning("Sarvam TTS request failed: %s", error)
         return jsonify(error="Sarvam could not generate speech right now."), 502

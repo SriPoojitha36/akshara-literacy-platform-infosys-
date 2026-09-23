@@ -2016,8 +2016,11 @@ function renderFlashcards(language) {
 }
 
 let activeSpeechAudio = null;
+const speechAudioCache = new Map();
+let speechRequestSequence = 0;
 
 function stopActiveSpeech() {
+  speechRequestSequence += 1;
   if (activeSpeechAudio) {
     activeSpeechAudio.pause();
     activeSpeechAudio.currentTime = 0;
@@ -2054,10 +2057,26 @@ async function speakText(text, language, onStatus) {
   // One learner action should produce one pronunciation only. Stop a previous
   // Sarvam/browser utterance before beginning the next one.
   stopActiveSpeech();
+  const requestSequence = speechRequestSequence;
+  const cacheKey = `${language}|${text}`;
+  const cachedAudio = speechAudioCache.get(cacheKey);
+  if (cachedAudio) {
+    const audio = new Audio(`data:${cachedAudio.mimeType};base64,${cachedAudio.audioBase64}`);
+    activeSpeechAudio = audio;
+    audio.onplay = () => { if (onStatus) onStatus('🔊 Playing pronunciation...'); };
+    audio.onended = () => { if (activeSpeechAudio === audio) activeSpeechAudio = null; };
+    await audio.play();
+    return true;
+  }
+  if (onStatus) onStatus('Preparing pronunciation…');
   try {
     const result = await api('/api/voice/synthesize', { method: 'POST', body: JSON.stringify({ text, language }) });
+    // Ignore a slow response if the learner has already clicked another phrase.
+    if (requestSequence !== speechRequestSequence) return false;
     if (result.audio_base64) {
-      const audio = new Audio(`data:${result.mime_type || 'audio/wav'};base64,${result.audio_base64}`);
+      const mimeType = result.mime_type || 'audio/wav';
+      speechAudioCache.set(cacheKey, { audioBase64: result.audio_base64, mimeType });
+      const audio = new Audio(`data:${mimeType};base64,${result.audio_base64}`);
       activeSpeechAudio = audio;
       audio.onplay = () => { if (onStatus) onStatus('🔊 Playing Sarvam AI pronunciation...'); };
       audio.onended = () => { if (activeSpeechAudio === audio) activeSpeechAudio = null; };
@@ -2066,6 +2085,7 @@ async function speakText(text, language, onStatus) {
       return true;
     }
   } catch (error) {
+    if (requestSequence !== speechRequestSequence) return false;
     if (onStatus) onStatus(`${error.message} Trying browser speech…`);
   }
   return speakWithBrowser(text, language, onStatus);
