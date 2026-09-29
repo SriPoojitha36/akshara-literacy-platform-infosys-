@@ -930,6 +930,9 @@ body.dashboard-mode .page-action, body.dashboard-mode .journey-button {
 body.dashboard-mode .page-action:hover, body.dashboard-mode .journey-button:hover { transform: translateY(-1px); }
 body.dashboard-mode .page-action:active, body.dashboard-mode .journey-button:active { transform: translateY(3px); border-bottom-width: 1px; }
 .learning-journey-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -941,7 +944,15 @@ body.dashboard-mode .page-action:active, body.dashboard-mode .journey-button:act
   color: #fff;
   box-shadow: 0 7px 0 #1c5c37, 0 14px 28px rgba(31,100,53,.17);
 }
+.learning-journey-card::before { content:""; position:absolute; z-index:-1; width:250px; height:250px; right:-105px; top:-135px; border:1px solid rgba(235,255,212,.36); border-radius:50%; box-shadow:0 0 0 22px rgba(235,255,212,.08), 0 0 0 48px rgba(235,255,212,.05); }
+.journey-orbit { position:absolute; z-index:-1; right:102px; top:10px; display:grid; place-items:center; width:48px; height:48px; border:1px solid rgba(235,255,212,.54); border-radius:50%; color:#e3f9a8; font-size:20px; animation:journey-float 3.2s ease-in-out infinite; }
+.journey-orbit::before, .journey-orbit::after { content:""; position:absolute; border-radius:50%; background:#d9f787; }
+.journey-orbit::before { width:7px; height:7px; left:-15px; top:20px; box-shadow:72px 16px 0 -1px rgba(255,255,255,.8); }
+.journey-orbit::after { width:4px; height:4px; right:-19px; top:2px; }
+@keyframes journey-float { 50% { transform:translateY(-7px) rotate(12deg); } }
 .journey-companion { display:grid; place-items:center; width:70px; height:70px; border-radius:50%; background:#e0f7a7; box-shadow:inset 0 -5px 0 #bedc82; font-size:37px; }
+.journey-companion { animation:companion-breathe 3.5s ease-in-out infinite; }
+@keyframes companion-breathe { 50% { transform:scale(1.045) rotate(-3deg); } }
 .journey-copy h3 { margin: 2px 0 5px; font-family: Fraunces, serif; font-size: 25px; }
 .journey-copy > p { margin: 0; color: #e7f7e2; font-size: 14px; }
 .journey-label { color: #d4f790 !important; font-size: 10px !important; font-weight: 800; letter-spacing: 1.5px; }
@@ -951,6 +962,9 @@ body.dashboard-mode .page-action:active, body.dashboard-mode .journey-button:act
 .journey-button { padding: 13px 18px; white-space: nowrap; background: #fff !important; border-bottom-color: #c9dfc5 !important; color: #277138 !important; }
 body.dashboard-mode .stat-card { border: 1px solid #e1ece0; border-bottom-width: 4px; border-radius: 18px; box-shadow: none; transition: transform .16s, box-shadow .16s; }
 body.dashboard-mode .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 18px rgba(24,75,51,.09); }
+body.dashboard-mode .today-plan-list button, body.dashboard-mode .word-of-day-card { transition: transform .18s ease, box-shadow .18s ease; }
+body.dashboard-mode .today-plan-list button:hover { transform: translateX(4px); box-shadow: 0 6px 14px rgba(30,94,47,.09); }
+body.dashboard-mode .word-of-day-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(30,94,47,.1); }
 body.dashboard-mode .dash-section { border-radius: 20px; border-color: #e0ebe0; box-shadow: 0 5px 0 #edf3eb; }
 body.dashboard-mode .overview-feature-grid { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr); gap:16px; }
 body.dashboard-mode .overview-feature-grid .dash-section { margin-bottom:16px; }
@@ -1015,6 +1029,7 @@ body.dashboard-mode .lesson-row button:hover { background:#eef9e9; }
   .learning-journey-card { grid-template-columns: 1fr; gap: 14px; padding: 20px; }
   .journey-companion { width: 58px; height: 58px; font-size: 30px; }
   .journey-button { grid-column: auto; width: 100%; }
+  .journey-orbit { right:16px; top:12px; opacity:.7; transform:scale(.75); }
   body.dashboard-mode .main-portal-nav { border-radius: 12px; }
   body.dashboard-mode .weekly-checkin-content { align-items:flex-start; flex-direction:column; }
   body.dashboard-mode .week-dots { width:100%; justify-content:space-between; }
