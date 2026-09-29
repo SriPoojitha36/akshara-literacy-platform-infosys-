@@ -1216,6 +1216,26 @@ function gameQuestionText(key, values = {}) {
   return text;
 }
 
+let activeAdaptiveRecommendation = null;
+const recommendationInterfaceCopy = {
+  English: { heading: 'AI PERSONALIZATION INSIGHT', helpful: 'Was this helpful?', yes: 'Yes', notQuite: 'Not quite', thanks: 'Thanks — we’ll use that to improve your next recommendation.', reading: 'Spend a few minutes reading familiar words aloud before starting your next lesson.', writing: 'Try a short writing activity next; careful letter-by-letter practice will build confidence.', comprehension: 'Choose a short reading passage and answer one question about what it means.', pronunciation: 'Use the voice coach before your next lesson to practise clear pronunciation.' },
+  Hindi: { heading: 'एआई व्यक्तिगत सुझाव', helpful: 'क्या यह मददगार था?', yes: 'हाँ', notQuite: 'पूरी तरह नहीं', thanks: 'धन्यवाद — हम आपके अगले सुझाव को बेहतर बनाने के लिए इसका उपयोग करेंगे।', reading: 'अगला पाठ शुरू करने से पहले परिचित शब्दों को कुछ मिनट ज़ोर से पढ़ें।', writing: 'अगली बार छोटा लेखन अभ्यास करें; अक्षर-दर-अक्षर अभ्यास आत्मविश्वास बढ़ाएगा।', comprehension: 'एक छोटा पाठ चुनें और उसके अर्थ पर एक प्रश्न का उत्तर दें।', pronunciation: 'अगले पाठ से पहले स्पष्ट उच्चारण के लिए वॉइस कोच का उपयोग करें।' },
+  Telugu: { heading: 'ఏఐ వ్యక్తిగత సూచన', helpful: 'ఇది ఉపయోగకరంగా ఉందా?', yes: 'అవును', notQuite: 'పూర్తిగా కాదు', thanks: 'ధన్యవాదాలు — మీ తదుపరి సూచనను మెరుగుపరచడానికి దీన్ని ఉపయోగిస్తాము।', reading: 'తదుపరి పాఠానికి ముందు తెలిసిన పదాలను కొన్ని నిమిషాలు గట్టిగా చదవండి।', writing: 'తదుపరి చిన్న రచనా అభ్యాసాన్ని ప్రయత్నించండి; అక్షరాల వారీగా అభ్యాసం ఆత్మవిశ్వాసాన్ని పెంచుతుంది।', comprehension: 'చిన్న పాఠాన్ని ఎంచుకుని దాని అర్థం గురించి ఒక ప్రశ్నకు సమాధానం ఇవ్వండి।', pronunciation: 'తదుపరి పాఠానికి ముందు స్పష్టమైన ఉచ్చారణ కోసం వాయిస్ కోచ్‌ను ఉపయోగించండి।' },
+  Tamil: { heading: 'ஏஐ தனிப்பயன் பரிந்துரை', helpful: 'இது பயனுள்ளதாக இருந்ததா?', yes: 'ஆம்', notQuite: 'முழுமையாக இல்லை', thanks: 'நன்றி — உங்கள் அடுத்த பரிந்துரையை மேம்படுத்த இதைப் பயன்படுத்துவோம்.', reading: 'அடுத்த பாடத்திற்கு முன் பரிச்சயமான சொற்களை சில நிமிடங்கள் உரக்கப் படியுங்கள்.', writing: 'அடுத்து ஒரு சிறிய எழுதும் பயிற்சியை முயற்சிக்கவும்; எழுத்து-எழுத்தாகப் பயிற்சி நம்பிக்கையை வளர்க்கும்.', comprehension: 'ஒரு சிறிய பகுதியைத் தேர்ந்தெடுத்து அதன் பொருளைப் பற்றிய ஒரு கேள்விக்கு பதிலளிக்கவும்.', pronunciation: 'அடுத்த பாடத்திற்கு முன் தெளிவான உச்சரிப்புக்காக குரல் பயிற்சியாளரைப் பயன்படுத்தவும்.' },
+  Kannada: { heading: 'ಎಐ ವೈಯಕ್ತಿಕ ಸಲಹೆ', helpful: 'ಇದು ಸಹಾಯಕವಾಗಿತ್ತೇ?', yes: 'ಹೌದು', notQuite: 'ಪೂರ್ಣವಾಗಿ ಅಲ್ಲ', thanks: 'ಧನ್ಯವಾದಗಳು — ನಿಮ್ಮ ಮುಂದಿನ ಸಲಹೆಯನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಇದನ್ನು ಬಳಸುತ್ತೇವೆ.', reading: 'ಮುಂದಿನ ಪಾಠದ ಮೊದಲು ಪರಿಚಿತ ಪದಗಳನ್ನು ಕೆಲವು ನಿಮಿಷ ಜೋರಾಗಿ ಓದಿ.', writing: 'ಮುಂದೆ ಚಿಕ್ಕ ಬರವಣಿಗೆ ಚಟುವಟಿಕೆಯನ್ನು ಪ್ರಯತ್ನಿಸಿ; ಅಕ್ಷರ-ಅಕ್ಷರದ ಅಭ್ಯಾಸ ಆತ್ಮವಿಶ್ವಾಸವನ್ನು ಹೆಚ್ಚಿಸುತ್ತದೆ.', comprehension: 'ಚಿಕ್ಕ ಪಠ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ ಮತ್ತು ಅದರ ಅರ್ಥದ ಬಗ್ಗೆ ಒಂದು ಪ್ರಶ್ನೆಗೆ ಉತ್ತರಿಸಿ.', pronunciation: 'ಮುಂದಿನ ಪಾಠದ ಮೊದಲು ಸ್ಪಷ್ಟ ಉಚ್ಚಾರಣೆಗಾಗಿ ಧ್ವನಿ ಕೋಚ್ ಬಳಸಿ.' }
+};
+
+function renderLocalizedRecommendation(language) {
+  const copy = recommendationInterfaceCopy[language] || recommendationInterfaceCopy.English;
+  if ($('#recommendationBadge')) $('#recommendationBadge').textContent = copy.heading;
+  if ($('#recommendationHelpful')) $('#recommendationHelpful').textContent = copy.helpful;
+  if ($('#recommendationYes')) $('#recommendationYes').textContent = copy.yes;
+  if ($('#recommendationNotQuite')) $('#recommendationNotQuite').textContent = copy.notQuite;
+  if ($('#recommendationText') && activeAdaptiveRecommendation) {
+    $('#recommendationText').textContent = copy[activeAdaptiveRecommendation.priority_skill] || activeAdaptiveRecommendation.message;
+  }
+}
+
 function updateInterfaceLanguage(language) {
   const copy = { ...currentInterfaceCopy(), ...interfaceCopy.English, ...(interfaceCopy[language] || {}), ...interfaceExtraCopy.English, ...(interfaceExtraCopy[language] || {}), ...interfaceSectionCopy.English, ...(interfaceSectionCopy[language] || {}), ...interfacePracticeCopy.English, ...(interfacePracticeCopy[language] || {}), ...interfaceActivityCopy.English, ...(interfaceActivityCopy[language] || {}), ...interfaceChallengePageCopy.English, ...(interfaceChallengePageCopy[language] || {}), ...interfaceChallengeControlCopy.English, ...(interfaceChallengeControlCopy[language] || {}), ...interfaceHomeAnalyticsCopy.English, ...(interfaceHomeAnalyticsCopy[language] || {}), ...interfaceHomeDetailCopy.English, ...(interfaceHomeDetailCopy[language] || {}), ...interfaceLevelCopy.English, ...(interfaceLevelCopy[language] || {}) };
   document.documentElement.lang = { Hindi: 'hi', Telugu: 'te', Tamil: 'ta', Kannada: 'kn' }[language] || 'en';
@@ -1230,6 +1250,7 @@ function updateInterfaceLanguage(language) {
     renderPillarContent(currentPillar, learningLanguage);
     renderFlashcards(learningLanguage);
   }
+  renderLocalizedRecommendation(language);
 }
 
 if ($('#interfaceLangSelect')) {
@@ -1300,9 +1321,13 @@ async function filterAndRenderCourses(language) {
     ]);
 
     const latest = recommendationData.recommendations && recommendationData.recommendations[0];
-    const recommendation = learningPathData.adaptive ? learningPathData.adaptive.message : (learningPathData.path ? learningPathData.path.message : latest && latest.content);
+    activeAdaptiveRecommendation = learningPathData.adaptive || null;
+    const recommendation = activeAdaptiveRecommendation ? activeAdaptiveRecommendation.message : (learningPathData.path ? learningPathData.path.message : latest && latest.content);
     if ($('#recommendationCard')) $('#recommendationCard').classList.toggle('hidden', !recommendation);
-    if (recommendation && $('#recommendationText')) $('#recommendationText').textContent = recommendation;
+    if (recommendation && $('#recommendationText')) {
+      $('#recommendationText').textContent = recommendation;
+      renderLocalizedRecommendation(localStorage.getItem('akshara_interface_language') || 'English');
+    }
     const path = learningPathData.path;
     if (path) {
       if ($('#journeyNextLesson')) $('#journeyNextLesson').textContent = path.next_lesson ? path.next_lesson.title : 'Learning path complete!';
@@ -1660,7 +1685,10 @@ document.querySelectorAll('[data-recommendation-feedback]').forEach(button => bu
   try {
     await api('/api/v1/recommendations/feedback', { method: 'POST', body: JSON.stringify({ helpful: button.dataset.recommendationFeedback === 'true' }) });
     const feedback = button.parentElement;
-    if (feedback) feedback.textContent = 'Thanks — we’ll use that to improve your next recommendation.';
+    if (feedback) {
+      const language = localStorage.getItem('akshara_interface_language') || 'English';
+      feedback.textContent = (recommendationInterfaceCopy[language] || recommendationInterfaceCopy.English).thanks;
+    }
   } catch (error) {}
 }));
 
