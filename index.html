@@ -107,7 +107,7 @@
             </div>
             <p>There are no marks and no pressure. Your answers help Akshara choose comfortable lessons for you.</p>
           </div>
-          <div class="assessment-progress"><span id="assessmentStep">1</span> of <span id="assessmentTotal">8</span> <div><i id="progressFill"></i></div></div>
+          <div class="assessment-progress"><span id="assessmentStep">1</span> of <span id="assessmentTotal">15</span> <div><i id="progressFill"></i></div></div>
           <div id="questionCard" class="question-card"></div>
           <p id="assessmentError" class="error" aria-live="polite"></p>
           <div class="assessment-actions"><button id="backQuestion" class="secondary" type="button">Back</button><button id="nextQuestion" class="primary" type="button">Continue <span>→</span></button></div>
@@ -457,7 +457,7 @@
                 </div>
                 <!-- Audio Wave Visualizer Canvas -->
                 <canvas id="voiceVisualizerCanvas" width="280" height="35" style="margin-top:12px; display:block; border-radius:6px; background:rgba(0,0,0,0.15);"></canvas>
-                <p id="voiceStatus" class="voice-status-msg"></p>
+                <p id="voiceStatus" class="voice-status-msg" role="status" aria-live="polite"></p>
                 <div id="voiceResult" class="voice-result-box hidden">
                   <p><strong>Spoken text:</strong> <span id="voiceSpoken"></span></p>
                   <p><strong>AI Accuracy Score:</strong> <span id="voiceScore" class="score-num"></span></p>

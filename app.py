@@ -647,24 +647,45 @@ def profile(learner):
 @current_learner
 def submit_assessment(learner):
     data = request.get_json(silent=True) or {}
-    required = {"focus", "reading", "writing", "confidence", "reading_check", "writing_check", "comprehension_check"}
+    required = {
+        "focus", "reading", "writing", "confidence", "learning_support", "practice_preference",
+        "reading_check", "reading_water_check", "reading_home_check",
+        "writing_check", "writing_water_check", "writing_home_check",
+        "comprehension_check", "comprehension_greeting_check",
+    }
     if not required.issubset(data) or any(not str(data[key]).strip() for key in required):
         return jsonify(error="Please answer every assessment question."), 400
-    expected_greeting = LANGUAGE_GREETINGS.get(learner["language"], LANGUAGE_GREETINGS["English"])
-    writing_answer = " ".join(str(data["writing_check"]).casefold().split())
-    writing_correct = writing_answer == expected_greeting.casefold()
-    reading_correct = data["reading_check"] == "correct"
-    comprehension_correct = data["comprehension_check"] == "correct"
-    knowledge_correct = sum((reading_correct, writing_correct, comprehension_correct))
+    expected_words = {
+        "greeting": LANGUAGE_GREETINGS.get(learner["language"], LANGUAGE_GREETINGS["English"]),
+        "water": PRACTICE_VOCABULARY.get(learner["language"], PRACTICE_VOCABULARY["English"])[1][0],
+        "home": PRACTICE_VOCABULARY.get(learner["language"], PRACTICE_VOCABULARY["English"])[2][0],
+    }
+    def matches(answer, expected):
+        return " ".join(str(answer).casefold().split()) == expected.casefold()
+    reading_correct = [
+        data["reading_check"] == "correct",
+        data["reading_water_check"] == "correct",
+        data["reading_home_check"] == "correct",
+    ]
+    writing_correct = [
+        matches(data["writing_check"], expected_words["greeting"]),
+        matches(data["writing_water_check"], expected_words["water"]),
+        matches(data["writing_home_check"], expected_words["home"]),
+    ]
+    comprehension_correct = [
+        data["comprehension_check"] == "correct",
+        data["comprehension_greeting_check"] == "correct",
+    ]
+    knowledge_correct = sum(reading_correct) + sum(writing_correct) + sum(comprehension_correct)
     confidence_score = {"Not yet": 0, "A little": 1, "Comfortable": 2}.get(data["reading"], 0) + {"Not yet": 0, "A little": 1, "Comfortable": 2}.get(data["writing"], 0)
-    score = round((confidence_score / 4 * 30) + (knowledge_correct / 3 * 70), 1)
+    score = round((confidence_score / 4 * 30) + (knowledge_correct / 8 * 70), 1)
     recommended_level = "Beginner" if score <= 35 else "Elementary" if score <= 65 else "Intermediate" if score <= 85 else "Advanced"
     db = get_db()
     db.execute("UPDATE learners SET assessment_completed=1, assessment_data=?, proficiency=? WHERE id=?", (json.dumps(data), recommended_level, learner["id"])); db.commit()
     save_baseline(db, learner["id"], data, {
-        "reading": 100 if reading_correct else 20,
-        "writing": 100 if writing_correct else 20,
-        "comprehension": 100 if comprehension_correct else 20,
+        "reading": round((sum(reading_correct) / 3) * 100),
+        "writing": round((sum(writing_correct) / 3) * 100),
+        "comprehension": round((sum(comprehension_correct) / 2) * 100),
     })
     assessment_row = db.execute("SELECT id FROM assessments WHERE assessment_type='diagnostic' ORDER BY id LIMIT 1").fetchone()
     if assessment_row:

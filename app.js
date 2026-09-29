@@ -4,14 +4,14 @@ const forms = { register: $('#registerForm'), login: $('#loginForm'), forgot: $(
 // Baseline literacy checks. Labels are intentionally simple; values are stable
 // answer keys so the server can score the assessment without trusting the UI.
 const baselineChecks = {
-  English: { greeting: 'Hello', water: 'Water', home: 'Home', minutes: '5 minutes', story: 'Ravi reads for 5 minutes every morning.', question: 'How long does Ravi read?', wrong: ['15 minutes', '1 hour'] },
-  Hindi: { greeting: 'नमस्ते', water: 'पानी', home: 'घर', minutes: '5 मिनट', story: 'रवि हर सुबह 5 मिनट पढ़ता है।', question: 'रवि कितने मिनट पढ़ता है?', wrong: ['10 मिनट', '1 घंटा'] },
-  Telugu: { greeting: 'నమస్కారం', water: 'నీరు', home: 'ఇల్లు', minutes: '5 నిమిషాలు', story: 'రవి ప్రతి ఉదయం 5 నిమిషాలు చదువుతాడు.', question: 'రవి ఎన్ని నిమిషాలు చదువుతాడు?', wrong: ['10 నిమిషాలు', '1 గంట'] },
-  Tamil: { greeting: 'வணக்கம்', water: 'நீர்', home: 'வீடு', minutes: '5 நிமிடங்கள்', story: 'ரவி தினமும் காலை 5 நிமிடங்கள் படிக்கிறார்.', question: 'ரவி எத்தனை நிமிடங்கள் படிக்கிறார்?', wrong: ['10 நிமிடங்கள்', '1 மணி நேரம்'] },
-  Kannada: { greeting: 'ನಮಸ್ಕಾರ', water: 'ನೀರು', home: 'ಮನೆ', minutes: '5 ನಿಮಿಷ', story: 'ರವಿ ಪ್ರತಿದಿನ ಬೆಳಿಗ್ಗೆ 5 ನಿಮಿಷ ಓದುತ್ತಾನೆ.', question: 'ರವಿ ಎಷ್ಟು ನಿಮಿಷ ಓದುತ್ತಾನೆ?', wrong: ['10 ನಿಮಿಷ', '1 ಗಂಟೆ'] },
-  Malayalam: { greeting: 'നമസ്കാരം', water: 'വെള്ളം', home: 'വീട്', minutes: '5 മിനിറ്റ്', story: 'രവി എല്ലാ രാവിലെയും 5 മിനിറ്റ് വായിക്കുന്നു.', question: 'രവി എത്ര മിനിറ്റ് വായിക്കുന്നു?', wrong: ['10 മിനിറ്റ്', '1 മണിക്കൂർ'] },
-  Bengali: { greeting: 'নমস্কার', water: 'জল', home: 'ঘর', minutes: '৫ মিনিট', story: 'রবি প্রতিদিন সকালে ৫ মিনিট পড়ে।', question: 'রবি কত মিনিট পড়ে?', wrong: ['১০ মিনিট', '১ ঘণ্টা'] },
-  Marathi: { greeting: 'नमस्कार', water: 'पाणी', home: 'घर', minutes: '५ मिनिटे', story: 'रवी रोज सकाळी ५ मिनिटे वाचतो.', question: 'रवी किती मिनिटे वाचतो?', wrong: ['१० मिनिटे', '१ तास'] }
+  English: { greeting: 'Hello', water: 'Water', home: 'Home', story: 'Ravi drinks water at home.', question: 'What does Ravi drink?', story2: 'Maya says hello to her friend.', question2: 'What does Maya say?' },
+  Hindi: { greeting: 'नमस्ते', water: 'पानी', home: 'घर', story: 'रवि घर पर पानी पीता है।', question: 'रवि क्या पीता है?', story2: 'माया अपनी दोस्त को नमस्ते कहती है।', question2: 'माया क्या कहती है?' },
+  Telugu: { greeting: 'నమస్కారం', water: 'నీరు', home: 'ఇల్లు', story: 'రవి ఇంట్లో నీరు తాగుతాడు।', question: 'రవి ఏమి తాగుతాడు?', story2: 'మాయ తన స్నేహితురాలికి నమస్కారం చెబుతుంది।', question2: 'మాయ ఏమి చెబుతుంది?' },
+  Tamil: { greeting: 'வணக்கம்', water: 'நீர்', home: 'வீடு', story: 'ரவி வீட்டில் நீர் குடிக்கிறார்.', question: 'ரவி என்ன குடிக்கிறார்?', story2: 'மாயா தனது தோழியிடம் வணக்கம் சொல்கிறார்.', question2: 'மாயா என்ன சொல்கிறார்?' },
+  Kannada: { greeting: 'ನಮಸ್ಕಾರ', water: 'ನೀರು', home: 'ಮನೆ', story: 'ರವಿ ಮನೆಯಲ್ಲಿ ನೀರು ಕುಡಿಯುತ್ತಾನೆ.', question: 'ರವಿ ಏನು ಕುಡಿಯುತ್ತಾನೆ?', story2: 'ಮಾಯಾ ತನ್ನ ಸ್ನೇಹಿತೆಗೆ ನಮಸ್ಕಾರ ಹೇಳುತ್ತಾಳೆ.', question2: 'ಮಾಯಾ ಏನು ಹೇಳುತ್ತಾಳೆ?' },
+  Malayalam: { greeting: 'നമസ്കാരം', water: 'വെള്ളം', home: 'വീട്', story: 'രവി വീട്ടിൽ വെള്ളം കുടിക്കുന്നു.', question: 'രവി എന്ത് കുടിക്കുന്നു?', story2: 'മായ തന്റെ സുഹൃത്തിനോട് നമസ്കാരം പറയുന്നു.', question2: 'മായ എന്ത് പറയുന്നു?' },
+  Bengali: { greeting: 'নমস্কার', water: 'জল', home: 'ঘর', story: 'রবি ঘরে জল খায়।', question: 'রবি কী খায়?', story2: 'মায়া তার বন্ধুকে নমস্কার বলে।', question2: 'মায়া কী বলে?' },
+  Marathi: { greeting: 'नमस्कार', water: 'पाणी', home: 'घर', story: 'रवी घरी पाणी पितो.', question: 'रवी काय पितो?', story2: 'माया तिच्या मैत्रिणीला नमस्कार म्हणते.', question2: 'माया काय म्हणते?' }
 };
 
 function baselineFor(language) {
@@ -50,12 +50,42 @@ const questions = [
     options: ['I need lots of support', 'I am ready to try', 'I feel confident']
   },
   {
+    key: 'learning_support',
+    title: () => 'What helps you learn best?',
+    help: () => 'Choose the support you would find most helpful. You can change this later.',
+    options: ['Pictures and examples', 'Listening to audio', 'Step-by-step guidance']
+  },
+  {
+    key: 'practice_preference',
+    title: () => 'Which activity would you like to try first?',
+    help: () => 'This helps Akshara choose a comfortable first activity for you.',
+    options: ['Reading familiar words', 'Writing simple words', 'Listening and speaking']
+  },
+  {
     key: 'reading_check',
     title: (lang) => `Reading check: choose the greeting in ${lang}`,
     help: () => 'This short activity helps us understand your starting reading level.',
     options: (lang) => {
       const words = baselineFor(lang);
       return [{ label: words.greeting, value: 'correct' }, { label: words.water, value: 'water' }, { label: words.home, value: 'home' }];
+    }
+  },
+  {
+    key: 'reading_water_check',
+    title: (lang) => `Reading check: choose “water” in ${lang}`,
+    help: () => 'Choose the word that means water.',
+    options: (lang) => {
+      const words = baselineFor(lang);
+      return [{ label: words.greeting, value: 'greeting' }, { label: words.water, value: 'correct' }, { label: words.home, value: 'home' }];
+    }
+  },
+  {
+    key: 'reading_home_check',
+    title: (lang) => `Reading check: choose “home” in ${lang}`,
+    help: () => 'Choose the word that means home.',
+    options: (lang) => {
+      const words = baselineFor(lang);
+      return [{ label: words.greeting, value: 'greeting' }, { label: words.water, value: 'water' }, { label: words.home, value: 'correct' }];
     }
   },
   {
@@ -66,13 +96,37 @@ const questions = [
     placeholder: (lang) => `Type ${baselineFor(lang).greeting}`
   },
   {
+    key: 'writing_water_check',
+    kind: 'text',
+    title: (lang) => `Writing check in ${lang}`,
+    help: (lang) => `Type the word for water shown here: ${baselineFor(lang).water}`,
+    placeholder: (lang) => `Type ${baselineFor(lang).water}`
+  },
+  {
+    key: 'writing_home_check',
+    kind: 'text',
+    title: (lang) => `Writing check in ${lang}`,
+    help: (lang) => `Type the word for home shown here: ${baselineFor(lang).home}`,
+    placeholder: (lang) => `Type ${baselineFor(lang).home}`
+  },
+  {
     key: 'comprehension_check',
     title: (lang) => baselineFor(lang).question,
     help: (lang) => `Read this short passage in ${lang}, then choose the answer.`,
     passage: (lang) => baselineFor(lang).story,
     options: (lang) => {
       const words = baselineFor(lang);
-      return [{ label: words.minutes, value: 'correct' }, { label: words.wrong[0], value: 'wrong-one' }, { label: words.wrong[1], value: 'wrong-two' }];
+      return [{ label: words.greeting, value: 'greeting' }, { label: words.water, value: 'correct' }, { label: words.home, value: 'home' }];
+    }
+  },
+  {
+    key: 'comprehension_greeting_check',
+    title: (lang) => baselineFor(lang).question2,
+    help: (lang) => `Read this short passage in ${lang}, then choose the answer.`,
+    passage: (lang) => baselineFor(lang).story2,
+    options: (lang) => {
+      const words = baselineFor(lang);
+      return [{ label: words.greeting, value: 'correct' }, { label: words.water, value: 'water' }, { label: words.home, value: 'home' }];
     }
   }
 ];
@@ -934,9 +988,16 @@ if ($('#nextQuestion')) $('#nextQuestion').addEventListener('click', async () =>
         reading: assessment.reading,
         writing: assessment.writing,
         confidence: assessment.confidence,
+        learning_support: assessment.learning_support,
+        practice_preference: assessment.practice_preference,
         reading_check: assessment.reading_check,
+        reading_water_check: assessment.reading_water_check,
+        reading_home_check: assessment.reading_home_check,
         writing_check: assessment.writing_check,
-        comprehension_check: assessment.comprehension_check
+        writing_water_check: assessment.writing_water_check,
+        writing_home_check: assessment.writing_home_check,
+        comprehension_check: assessment.comprehension_check,
+        comprehension_greeting_check: assessment.comprehension_greeting_check
       })
     });
     playSound('success');
@@ -2019,6 +2080,13 @@ let activeSpeechAudio = null;
 const speechAudioCache = new Map();
 let speechRequestSequence = 0;
 
+function setVoiceLoading(isLoading) {
+  const listenButton = $('#listenBtn');
+  if (!listenButton) return;
+  listenButton.disabled = isLoading;
+  listenButton.setAttribute('aria-busy', String(isLoading));
+}
+
 function stopActiveSpeech() {
   speechRequestSequence += 1;
   if (activeSpeechAudio) {
@@ -2059,17 +2127,21 @@ async function speakText(text, language, onStatus) {
   stopActiveSpeech();
   const requestSequence = speechRequestSequence;
   const cacheKey = `${language}|${text}`;
-  const cachedAudio = speechAudioCache.get(cacheKey);
-  if (cachedAudio) {
-    const audio = new Audio(`data:${cachedAudio.mimeType};base64,${cachedAudio.audioBase64}`);
-    activeSpeechAudio = audio;
-    audio.onplay = () => { if (onStatus) onStatus('🔊 Playing pronunciation...'); };
-    audio.onended = () => { if (activeSpeechAudio === audio) activeSpeechAudio = null; };
-    await audio.play();
-    return true;
+  const isVoiceCoachRequest = typeof onStatus === 'function';
+  if (isVoiceCoachRequest) {
+    setVoiceLoading(true);
+    onStatus('Preparing pronunciation…');
   }
-  if (onStatus) onStatus('Preparing pronunciation…');
   try {
+    const cachedAudio = speechAudioCache.get(cacheKey);
+    if (cachedAudio) {
+      const audio = new Audio(`data:${cachedAudio.mimeType};base64,${cachedAudio.audioBase64}`);
+      activeSpeechAudio = audio;
+      audio.onplay = () => { if (onStatus) onStatus('🔊 Playing pronunciation...'); };
+      audio.onended = () => { if (activeSpeechAudio === audio) activeSpeechAudio = null; };
+      await audio.play();
+      return true;
+    }
     const result = await api('/api/voice/synthesize', { method: 'POST', body: JSON.stringify({ text, language }) });
     // Ignore a slow response if the learner has already clicked another phrase.
     if (requestSequence !== speechRequestSequence) return false;
@@ -2084,11 +2156,14 @@ async function speakText(text, language, onStatus) {
       await audio.play();
       return true;
     }
+    return speakWithBrowser(text, language, onStatus);
   } catch (error) {
     if (requestSequence !== speechRequestSequence) return false;
     if (onStatus) onStatus(`${error.message} Trying browser speech…`);
+    return speakWithBrowser(text, language, onStatus);
+  } finally {
+    if (isVoiceCoachRequest) setVoiceLoading(false);
   }
-  return speakWithBrowser(text, language, onStatus);
 }
 
 function playSpeech(text, language) {
