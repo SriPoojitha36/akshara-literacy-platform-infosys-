@@ -1080,6 +1080,7 @@ async function updateLanguage(newLang, saveToDb = true) {
 
   // Sync header dropdown
   if ($('#dashLangSelect')) $('#dashLangSelect').value = newLang;
+  setLearningLanguageChoice(newLang);
 
   // Persist to database if logged in
   if (saveToDb && currentLearner && currentLearner.id) {
@@ -1125,6 +1126,40 @@ async function updateLanguage(newLang, saveToDb = true) {
 if ($('#dashLangSelect')) {
   $('#dashLangSelect').addEventListener('change', (e) => {
     updateLanguage(e.target.value, true);
+  });
+}
+
+function setLearningLanguageChoice(language) {
+  const selectedOption = document.querySelector(`#dashLangSelect option[value="${language}"]`);
+  if ($('#learningLangChoice')) $('#learningLangChoice').textContent = selectedOption ? selectedOption.textContent : `🌐 ${language}`;
+}
+
+function closeLearningLanguageMenu() {
+  const menu = $('#learningLangMenu');
+  const trigger = $('#learningLangTrigger');
+  if (menu) menu.classList.add('hidden');
+  if (trigger) trigger.setAttribute('aria-expanded', 'false');
+}
+
+if ($('#learningLangTrigger')) {
+  $('#learningLangTrigger').addEventListener('click', () => {
+    const menu = $('#learningLangMenu');
+    const isOpen = menu && !menu.classList.contains('hidden');
+    if (isOpen) closeLearningLanguageMenu();
+    else {
+      closeInterfaceLanguageMenu();
+      menu.classList.remove('hidden');
+      $('#learningLangTrigger').setAttribute('aria-expanded', 'true');
+    }
+  });
+  document.querySelectorAll('[data-learning-language]').forEach(option => option.addEventListener('click', () => {
+    const language = option.dataset.learningLanguage;
+    if ($('#dashLangSelect')) $('#dashLangSelect').value = language;
+    closeLearningLanguageMenu();
+    updateLanguage(language, true);
+  }));
+  document.addEventListener('click', event => {
+    if (!event.target.closest('.interface-language-picker')) closeLearningLanguageMenu();
   });
 }
 
@@ -1334,6 +1369,7 @@ if ($('#interfaceLangTrigger')) {
     const isOpen = menu && !menu.classList.contains('hidden');
     if (isOpen) closeInterfaceLanguageMenu();
     else {
+      closeLearningLanguageMenu();
       menu.classList.remove('hidden');
       $('#interfaceLangTrigger').setAttribute('aria-expanded', 'true');
     }
@@ -1374,6 +1410,7 @@ async function showDashboard(user) {
 
   const userLang = user.language || 'Hindi';
   if ($('#dashLangSelect')) $('#dashLangSelect').value = userLang;
+  setLearningLanguageChoice(userLang);
 
   // Fetch streak & achievements from backend
   try {

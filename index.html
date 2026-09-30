@@ -132,7 +132,8 @@
             </div>
             <div class="header-actions">
               <div class="language-pair" aria-label="Language preferences">
-                <label><span data-ui="learningLanguage">Learning language</span><select id="dashLangSelect" class="btn-executive lang-select-pro" title="Change preferred learning language">
+                <label><span data-ui="learningLanguage">Learning language</span><div class="interface-language-picker">
+                  <select id="dashLangSelect" class="native-language-select" title="Change preferred learning language" aria-hidden="true" tabindex="-1">
                   <option value="Hindi">🌐 Hindi</option>
                   <option value="English">🌐 English</option>
                   <option value="Telugu">🌐 Telugu</option>
@@ -141,7 +142,19 @@
                   <option value="Malayalam">🌐 Malayalam</option>
                   <option value="Bengali">🌐 Bengali</option>
                   <option value="Marathi">🌐 Marathi</option>
-                </select></label>
+                  </select>
+                  <button id="learningLangTrigger" class="btn-executive interface-language-trigger" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="learningLangChoice">🌐 Hindi</span><span aria-hidden="true">⌄</span></button>
+                  <div id="learningLangMenu" class="interface-language-menu hidden" role="listbox" aria-label="Learning language">
+                    <button type="button" role="option" data-learning-language="Hindi">🌐 Hindi</button>
+                    <button type="button" role="option" data-learning-language="English">🌐 English</button>
+                    <button type="button" role="option" data-learning-language="Telugu">🌐 Telugu</button>
+                    <button type="button" role="option" data-learning-language="Tamil">🌐 Tamil</button>
+                    <button type="button" role="option" data-learning-language="Kannada">🌐 Kannada</button>
+                    <button type="button" role="option" data-learning-language="Malayalam">🌐 Malayalam</button>
+                    <button type="button" role="option" data-learning-language="Bengali">🌐 Bengali</button>
+                    <button type="button" role="option" data-learning-language="Marathi">🌐 Marathi</button>
+                  </div>
+                </div></label>
                 <label><span data-ui="interfaceLanguage">Interface language</span><div class="interface-language-picker">
                   <select id="interfaceLangSelect" class="native-language-select" title="Change interface language" aria-hidden="true" tabindex="-1">
                   <option value="English">🌐 English</option>
