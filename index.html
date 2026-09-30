@@ -142,13 +142,23 @@
                   <option value="Bengali">🌐 Bengali</option>
                   <option value="Marathi">🌐 Marathi</option>
                 </select></label>
-                <label><span data-ui="interfaceLanguage">Interface language</span><select id="interfaceLangSelect" class="btn-executive" title="Change interface language">
+                <label><span data-ui="interfaceLanguage">Interface language</span><div class="interface-language-picker">
+                  <select id="interfaceLangSelect" class="native-language-select" title="Change interface language" aria-hidden="true" tabindex="-1">
                   <option value="English">🌐 English</option>
                   <option value="Hindi">🌐 हिन्दी</option>
                   <option value="Telugu">🌐 తెలుగు</option>
                   <option value="Tamil">🌐 தமிழ்</option>
                   <option value="Kannada">🌐 ಕನ್ನಡ</option>
-                </select></label>
+                  </select>
+                  <button id="interfaceLangTrigger" class="btn-executive interface-language-trigger" type="button" aria-haspopup="listbox" aria-expanded="false"><span id="interfaceLangChoice">🌐 English</span><span aria-hidden="true">⌄</span></button>
+                  <div id="interfaceLangMenu" class="interface-language-menu hidden" role="listbox" aria-label="Interface language">
+                    <button type="button" role="option" data-interface-language="English">🌐 English</button>
+                    <button type="button" role="option" data-interface-language="Hindi">🌐 हिन्दी</button>
+                    <button type="button" role="option" data-interface-language="Telugu">🌐 తెలుగు</button>
+                    <button type="button" role="option" data-interface-language="Tamil">🌐 தமிழ்</button>
+                    <button type="button" role="option" data-interface-language="Kannada">🌐 ಕನ್ನಡ</button>
+                  </div>
+                </div></label>
               </div>
               <button id="globalRefreshBtn" type="button" class="btn-executive refresh-btn" title="Refresh session questions">✨ <span data-ui="shuffleQuestions">Shuffle Questions</span></button>
               <button id="viewCertBtn" type="button" class="btn-executive cert-btn" title="Download literacy certificate">📜 <span data-ui="certificate">Certificate</span></button>
@@ -189,6 +199,7 @@
             </div>
 
             <section class="learning-journey-card">
+              <div class="journey-orbit" aria-hidden="true"><span>✦</span></div>
               <div class="journey-companion" aria-hidden="true">🌱</div>
               <div class="journey-copy">
                 <p class="journey-label" data-ui="journeyReady">READY WHEN YOU ARE</p>

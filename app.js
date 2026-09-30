@@ -809,7 +809,11 @@ forms.login.addEventListener('submit', async (event) => {
   try {
     rotateSessionSeed();
     const { learner } = await api('/api/auth/login', { method: 'POST', body: JSON.stringify(formData(event.target)) });
-    showDashboard(learner);
+    currentLearner = learner;
+    // A valid sign-in is required, but a new learner must still complete the
+    // starting assessment before entering the personalised dashboard.
+    if (learner.assessmentCompleted) showDashboard(learner);
+    else startAssessment(learner);
   } catch (err) { error.textContent = err.message; }
 });
 
@@ -900,6 +904,19 @@ function startAssessment(user = {}) {
   renderQuestion();
 }
 
+function isKnowledgeCheck(question) {
+  return ['reading_check', 'reading_water_check', 'reading_home_check', 'writing_check', 'writing_water_check', 'writing_home_check', 'comprehension_check', 'comprehension_greeting_check'].includes(question.key);
+}
+
+function isAssessmentAnswerCorrect(question, answer) {
+  if (!isKnowledgeCheck(question)) return null;
+  if (question.kind !== 'text') return answer === 'correct';
+  const words = baselineFor(assessmentLanguage);
+  const expected = question.key === 'writing_check' ? words.greeting
+    : question.key === 'writing_water_check' ? words.water : words.home;
+  return String(answer || '').trim().normalize('NFC').toLocaleLowerCase() === expected.normalize('NFC').toLocaleLowerCase();
+}
+
 function renderQuestion() {
   const q = questions[questionIndex];
   const title = typeof q.title === 'function' ? q.title(assessmentLanguage) : q.title;
@@ -911,14 +928,19 @@ function renderQuestion() {
   $('#progressFill').style.width = `${((questionIndex + 1) / questions.length) * 100}%`;
 
   const selectedValue = assessment[q.key] || (q.key === 'language' ? assessmentLanguage : '');
+  const isCorrect = selectedValue ? isAssessmentAnswerCorrect(q, selectedValue) : null;
+  const feedback = `<p id="assessmentAnswerFeedback" class="assessment-answer-feedback ${selectedValue && isKnowledgeCheck(q) ? (isCorrect ? 'correct' : 'incorrect') : 'hidden'}">${selectedValue && isKnowledgeCheck(q) ? (isCorrect ? 'Correct ✓' : 'Try again — this helps us choose the right starting level.') : ''}</p>`;
 
   const answerMarkup = q.kind === 'text'
     ? `<input id="assessmentTextAnswer" class="assessment-text-answer" type="text" value="${String(selectedValue).replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" placeholder="${(typeof q.placeholder === 'function' ? q.placeholder(assessmentLanguage) : q.placeholder) || 'Type your answer'}" autocomplete="off" />`
     : `<div class="answer-list">
       ${(options || []).map(option => {
         const item = typeof option === 'string' ? { label: option, value: option } : option;
-        return `<button class="answer ${selectedValue === item.value ? 'selected' : ''}" data-answer="${item.value}" type="button">
-          <span>${item.label}</span><span class="opt-check">${selectedValue === item.value ? '✓' : ''}</span>
+        const selected = selectedValue === item.value;
+        const answerState = selected && isKnowledgeCheck(q) ? (isCorrect ? 'correct' : 'incorrect') : '';
+        const answerLabel = selected ? (isKnowledgeCheck(q) ? (isCorrect ? 'Correct ✓' : 'Try again') : 'Selected') : '';
+        return `<button class="answer ${selected ? 'selected' : ''} ${answerState}" data-answer="${item.value}" type="button">
+          <span>${item.label}</span><span class="opt-check">${answerLabel}</span>
         </button>`;
       }).join('')}
     </div>`;
@@ -928,6 +950,7 @@ function renderQuestion() {
     <p>${help}</p>
     ${q.passage ? `<div class="assessment-passage">${q.passage(assessmentLanguage)}</div>` : ''}
     ${answerMarkup}
+    ${feedback}
   `;
 
   document.querySelectorAll('.answer').forEach(button => button.addEventListener('click', () => {
@@ -942,7 +965,16 @@ function renderQuestion() {
   }));
 
   if (q.kind === 'text' && $('#assessmentTextAnswer')) {
+    const updateWritingFeedback = (event) => {
+      assessment[q.key] = event.target.value;
+      const feedbackElement = $('#assessmentAnswerFeedback');
+      if (!feedbackElement || !event.target.value.trim()) return;
+      const correct = isAssessmentAnswerCorrect(q, event.target.value);
+      feedbackElement.className = `assessment-answer-feedback ${correct ? 'correct' : 'incorrect'}`;
+      feedbackElement.textContent = correct ? 'Correct ✓' : 'Try again — this helps us choose the right starting level.';
+    };
     $('#assessmentTextAnswer').addEventListener('input', (event) => { assessment[q.key] = event.target.value; });
+    $('#assessmentTextAnswer').addEventListener('blur', updateWritingFeedback);
   }
 
   $('#backQuestion').disabled = questionIndex === 0;
@@ -1161,9 +1193,9 @@ const interfaceChallengeControlCopy = {
 
 const interfaceHomeAnalyticsCopy = {
   English: { journeyReady: 'READY WHEN YOU ARE', guidedPractice: 'Easy, guided practice', chooseActivity: 'Choose one activity now. You can return whenever you are ready.', learnLetter: 'Learn one letter or word', guidedLesson: 'Guided micro-lesson', wordActivity: 'Try a quick word activity', vocabPractice: 'Vocabulary practice', listenPhrase: 'Listen and say a phrase', speechPractice: 'Speech practice', todaysStep: "TODAY'S STEP", myLevel: 'MY LEVEL', practicePoints: 'PRACTICE POINTS', learningDays: 'LEARNING DAYS', skillSnapshot: 'SKILL SNAPSHOT', learningStrengths: 'Your learning strengths', liveProfile: 'Live profile', executiveAnalytics: 'EXECUTIVE ANALYTICS', lessonsCompleted: 'LESSONS COMPLETED', voiceAccuracy: 'VOICE ACCURACY', benchmarkTier: 'BENCHMARK TIER', gamification: 'GAMIFICATION' },
-  Hindi: { journeyReady: 'जब आप तैयार हों', guidedPractice: 'सरल मार्गदर्शित अभ्यास', chooseActivity: 'अभी एक गतिविधि चुनें। जब चाहें वापस आ सकते हैं।', learnLetter: 'एक अक्षर या शब्द सीखें', guidedLesson: 'मार्गदर्शित छोटा पाठ', wordActivity: 'त्वरित शब्द गतिविधि आज़माएं', vocabPractice: 'शब्दावली अभ्यास', listenPhrase: 'वाक्य सुनें और बोलें', speechPractice: 'बोलने का अभ्यास', todaysStep: 'आज का कदम', myLevel: 'मेरा स्तर', practicePoints: 'अभ्यास अंक', learningDays: 'सीखने के दिन', skillSnapshot: 'कौशल झलक', learningStrengths: 'आपकी सीखने की ताकत', liveProfile: 'लाइव प्रोफ़ाइल', executiveAnalytics: 'प्रदर्शन विश्लेषण', lessonsCompleted: 'पूरे किए गए पाठ', voiceAccuracy: 'वाणी सटीकता', benchmarkTier: 'स्तर श्रेणी', gamification: 'खेल आधारित प्रगति' },
-  Telugu: { journeyReady: 'మీరు సిద్ధమైనప్పుడు', guidedPractice: 'సులభ మార్గదర్శిత అభ్యాసం', chooseActivity: 'ఇప్పుడు ఒక కార్యకలాపాన్ని ఎంచుకోండి. మీరు సిద్ధమైనప్పుడు తిరిగి రావచ్చు.', learnLetter: 'ఒక అక్షరం లేదా పదం నేర్చుకోండి', guidedLesson: 'మార్గదర్శిత చిన్న పాఠం', wordActivity: 'త్వరిత పద కార్యకలాపాన్ని ప్రయత్నించండి', vocabPractice: 'పదజాల అభ్యాసం', listenPhrase: 'వాక్యాన్ని విని చెప్పండి', speechPractice: 'మాట్లాడే అభ్యాసం', todaysStep: 'నేటి అడుగు', myLevel: 'నా స్థాయి', practicePoints: 'అభ్యాస పాయింట్లు', learningDays: 'అభ్యాస దినాలు', skillSnapshot: 'నైపుణ్య సారాంశం', learningStrengths: 'మీ అభ్యాస బలాలు', liveProfile: 'ప్రస్తుత ప్రొఫైల్', executiveAnalytics: 'పనితీరు విశ్లేషణ', lessonsCompleted: 'పూర్తయిన పాఠాలు', voiceAccuracy: 'వాయిస్ ఖచ్చితత్వం', benchmarkTier: 'స్థాయి శ్రేణి', gamification: 'ఆటల ద్వారా పురోగతి' },
-  Tamil: { journeyReady: 'நீங்கள் தயாரானபோது', guidedPractice: 'எளிய வழிகாட்டப்பட்ட பயிற்சி', chooseActivity: 'இப்போது ஒரு செயல்பாட்டைத் தேர்ந்தெடுக்கவும். தயாரானபோது திரும்பி வரலாம்.', learnLetter: 'ஒரு எழுத்து அல்லது சொல்லைக் கற்கவும்', guidedLesson: 'வழிகாட்டப்பட்ட சிறு பாடம்', wordActivity: 'விரைவு சொல் செயல்பாட்டை முயற்சிக்கவும்', vocabPractice: 'சொற்களஞ்சிய பயிற்சி', listenPhrase: 'வாக்கியத்தைக் கேட்டு சொல்லுங்கள்', speechPractice: 'பேச்சுப் பயிற்சி', todaysStep: 'இன்றைய படி', myLevel: 'என் நிலை', practicePoints: 'பயிற்சிப் புள்ளிகள்', learningDays: 'கற்றல் நாட்கள்', skillSnapshot: 'திறன் சுருக்கம்', learningStrengths: 'உங்கள் கற்றல் பலங்கள்', liveProfile: 'நேரடி சுயவிவரம்', executiveAnalytics: 'செயல்திறன் பகுப்பாய்வு', lessonsCompleted: 'முடித்த பாடங்கள்', voiceAccuracy: 'குரல் துல்லியம்', benchmarkTier: 'நிலை வரிசை', gamification: 'விளையாட்டு வழி முன்னேற்றம்' },
+  Hindi: { personalLearningHome: 'आपका व्यक्तिगत अक्षर सीखने का मुखपृष्ठ', journeyReady: 'जब आप तैयार हों', guidedPractice: 'सरल मार्गदर्शित अभ्यास', chooseActivity: 'अभी एक गतिविधि चुनें। जब चाहें वापस आ सकते हैं।', learnLetter: 'एक अक्षर या शब्द सीखें', guidedLesson: 'मार्गदर्शित छोटा पाठ', wordActivity: 'त्वरित शब्द गतिविधि आज़माएं', vocabPractice: 'शब्दावली अभ्यास', listenPhrase: 'वाक्य सुनें और बोलें', speechPractice: 'बोलने का अभ्यास', todaysStep: 'आज का कदम', myLevel: 'मेरा स्तर', practicePoints: 'अभ्यास अंक', learningDays: 'सीखने के दिन', skillSnapshot: 'कौशल झलक', learningStrengths: 'आपकी सीखने की ताकत', liveProfile: 'लाइव प्रोफ़ाइल', executiveAnalytics: 'प्रदर्शन विश्लेषण', lessonsCompleted: 'पूरे किए गए पाठ', voiceAccuracy: 'वाणी सटीकता', benchmarkTier: 'स्तर श्रेणी', gamification: 'खेल आधारित प्रगति' },
+  Telugu: { personalLearningHome: 'మీ వ్యక్తిగత అక్షర అభ్యాస ముఖపుట', journeyReady: 'మీరు సిద్ధమైనప్పుడు', guidedPractice: 'సులభ మార్గదర్శిత అభ్యాసం', chooseActivity: 'ఇప్పుడు ఒక కార్యకలాపాన్ని ఎంచుకోండి. మీరు సిద్ధమైనప్పుడు తిరిగి రావచ్చు.', learnLetter: 'ఒక అక్షరం లేదా పదం నేర్చుకోండి', guidedLesson: 'మార్గదర్శిత చిన్న పాఠం', wordActivity: 'త్వరిత పద కార్యకలాపాన్ని ప్రయత్నించండి', vocabPractice: 'పదజాల అభ్యాసం', listenPhrase: 'వాక్యాన్ని విని చెప్పండి', speechPractice: 'మాట్లాడే అభ్యాసం', todaysStep: 'నేటి అడుగు', myLevel: 'నా స్థాయి', practicePoints: 'అభ్యాస పాయింట్లు', learningDays: 'అభ్యాస దినాలు', skillSnapshot: 'నైపుణ్య సారాంశం', learningStrengths: 'మీ అభ్యాస బలాలు', liveProfile: 'ప్రస్తుత ప్రొఫైల్', executiveAnalytics: 'పనితీరు విశ్లేషణ', lessonsCompleted: 'పూర్తయిన పాఠాలు', voiceAccuracy: 'వాయిస్ ఖచ్చితత్వం', benchmarkTier: 'స్థాయి శ్రేణి', gamification: 'ఆటల ద్వారా పురోగతి' },
+  Tamil: { personalLearningHome: 'உங்கள் தனிப்பட்ட அக்ஷரா கற்றல் முகப்பு', journeyReady: 'நீங்கள் தயாரானபோது', guidedPractice: 'எளிய வழிகாட்டப்பட்ட பயிற்சி', chooseActivity: 'இப்போது ஒரு செயல்பாட்டைத் தேர்ந்தெடுக்கவும். தயாரானபோது திரும்பி வரலாம்.', learnLetter: 'ஒரு எழுத்து அல்லது சொல்லைக் கற்கவும்', guidedLesson: 'வழிகாட்டப்பட்ட சிறு பாடம்', wordActivity: 'விரைவு சொல் செயல்பாட்டை முயற்சிக்கவும்', vocabPractice: 'சொற்களஞ்சிய பயிற்சி', listenPhrase: 'வாக்கியத்தைக் கேட்டு சொல்லுங்கள்', speechPractice: 'பேச்சுப் பயிற்சி', todaysStep: 'இன்றைய படி', myLevel: 'என் நிலை', practicePoints: 'பயிற்சிப் புள்ளிகள்', learningDays: 'கற்றல் நாட்கள்', skillSnapshot: 'திறன் சுருக்கம்', learningStrengths: 'உங்கள் கற்றல் பலங்கள்', liveProfile: 'நேரடி சுயவிவரம்', executiveAnalytics: 'செயல்திறன் பகுப்பாய்வு', lessonsCompleted: 'முடித்த பாடங்கள்', voiceAccuracy: 'குரல் துல்லியம்', benchmarkTier: 'நிலை வரிசை', gamification: 'விளையாட்டு வழி முன்னேற்றம்' },
   Kannada: { journeyReady: 'ನೀವು ಸಿದ್ಧರಾದಾಗ', guidedPractice: 'ಸರಳ ಮಾರ್ಗದರ್ಶಿತ ಅಭ್ಯಾಸ', chooseActivity: 'ಈಗ ಒಂದು ಚಟುವಟಿಕೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ. ನೀವು ಸಿದ್ಧರಾದಾಗ ಮರಳಿ ಬರಬಹುದು.', learnLetter: 'ಒಂದು ಅಕ್ಷರ ಅಥವಾ ಪದ ಕಲಿಯಿರಿ', guidedLesson: 'ಮಾರ್ಗದರ್ಶಿತ ಸೂಕ್ಷ್ಮ ಪಾಠ', wordActivity: 'ತ್ವರಿತ ಪದ ಚಟುವಟಿಕೆ ಪ್ರಯತ್ನಿಸಿ', vocabPractice: 'ಪದಕೋಶ ಅಭ್ಯಾಸ', listenPhrase: 'ವಾಕ್ಯವನ್ನು ಆಲಿಸಿ ಮತ್ತು ಹೇಳಿ', speechPractice: 'ಮಾತಿನ ಅಭ್ಯಾಸ', todaysStep: 'ಇಂದಿನ ಹೆಜ್ಜೆ', myLevel: 'ನನ್ನ ಹಂತ', practicePoints: 'ಅಭ್ಯಾಸ ಅಂಕಗಳು', learningDays: 'ಕಲಿಕೆಯ ದಿನಗಳು', skillSnapshot: 'ಕೌಶಲ್ಯದ ಚಿತ್ರಣ', learningStrengths: 'ನಿಮ್ಮ ಕಲಿಕೆಯ ಶಕ್ತಿಗಳು', liveProfile: 'ನೇರ ಪ್ರೊಫೈಲ್', executiveAnalytics: 'ಕಾರ್ಯಕ್ಷಮತೆ ವಿಶ್ಲೇಷಣೆ', lessonsCompleted: 'ಪೂರ್ಣಗೊಂಡ ಪಾಠಗಳು', voiceAccuracy: 'ಧ್ವನಿ ನಿಖರತೆ', benchmarkTier: 'ಮಟ್ಟದ ಶ್ರೇಣಿ', gamification: 'ಆಟೀಕರಣ' }
 };
 
@@ -1225,15 +1257,38 @@ const recommendationInterfaceCopy = {
   Kannada: { heading: 'ಎಐ ವೈಯಕ್ತಿಕ ಸಲಹೆ', helpful: 'ಇದು ಸಹಾಯಕವಾಗಿತ್ತೇ?', yes: 'ಹೌದು', notQuite: 'ಪೂರ್ಣವಾಗಿ ಅಲ್ಲ', thanks: 'ಧನ್ಯವಾದಗಳು — ನಿಮ್ಮ ಮುಂದಿನ ಸಲಹೆಯನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಇದನ್ನು ಬಳಸುತ್ತೇವೆ.', reading: 'ಮುಂದಿನ ಪಾಠದ ಮೊದಲು ಪರಿಚಿತ ಪದಗಳನ್ನು ಕೆಲವು ನಿಮಿಷ ಜೋರಾಗಿ ಓದಿ.', writing: 'ಮುಂದೆ ಚಿಕ್ಕ ಬರವಣಿಗೆ ಚಟುವಟಿಕೆಯನ್ನು ಪ್ರಯತ್ನಿಸಿ; ಅಕ್ಷರ-ಅಕ್ಷರದ ಅಭ್ಯಾಸ ಆತ್ಮವಿಶ್ವಾಸವನ್ನು ಹೆಚ್ಚಿಸುತ್ತದೆ.', comprehension: 'ಚಿಕ್ಕ ಪಠ್ಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ ಮತ್ತು ಅದರ ಅರ್ಥದ ಬಗ್ಗೆ ಒಂದು ಪ್ರಶ್ನೆಗೆ ಉತ್ತರಿಸಿ.', pronunciation: 'ಮುಂದಿನ ಪಾಠದ ಮೊದಲು ಸ್ಪಷ್ಟ ಉಚ್ಚಾರಣೆಗಾಗಿ ಧ್ವನಿ ಕೋಚ್ ಬಳಸಿ.' }
 };
 
-function renderLocalizedRecommendation(language) {
+function currentRecommendationLanguage() {
+  const selectedLanguage = $('#interfaceLangSelect') && $('#interfaceLangSelect').value;
+  return recommendationInterfaceCopy[selectedLanguage] ? selectedLanguage : (localStorage.getItem('akshara_interface_language') || 'English');
+}
+
+function renderLocalizedRecommendation(language = currentRecommendationLanguage()) {
   const copy = recommendationInterfaceCopy[language] || recommendationInterfaceCopy.English;
+  const card = $('#recommendationCard');
+  const prioritySkill = (activeAdaptiveRecommendation && activeAdaptiveRecommendation.priority_skill) || (card && card.dataset.prioritySkill);
   if ($('#recommendationBadge')) $('#recommendationBadge').textContent = copy.heading;
   if ($('#recommendationHelpful')) $('#recommendationHelpful').textContent = copy.helpful;
   if ($('#recommendationYes')) $('#recommendationYes').textContent = copy.yes;
   if ($('#recommendationNotQuite')) $('#recommendationNotQuite').textContent = copy.notQuite;
-  if ($('#recommendationText') && activeAdaptiveRecommendation) {
-    $('#recommendationText').textContent = copy[activeAdaptiveRecommendation.priority_skill] || activeAdaptiveRecommendation.message;
+  if ($('#recommendationText') && card && !card.classList.contains('hidden')) {
+    $('#recommendationText').textContent = copy[prioritySkill] || card.dataset.fallbackMessage || '';
   }
+}
+
+const journeyStatusCopy = {
+  English: { ready: minutes => `A short ${minutes}-minute practice is ready for you.`, complete: 'Wonderful work — you have completed your current learning path.', minutes: minutes => `${minutes} min`, completeLabel: 'Great work' },
+  Hindi: { ready: minutes => `${minutes} मिनट का छोटा अभ्यास आपके लिए तैयार है।`, complete: 'बहुत बढ़िया — आपने अपना वर्तमान सीखने का पथ पूरा कर लिया है।', minutes: minutes => `${minutes} मिनट`, completeLabel: 'बहुत बढ़िया' },
+  Telugu: { ready: minutes => `${minutes} నిమిషాల చిన్న అభ్యాసం మీ కోసం సిద్ధంగా ఉంది।`, complete: 'అద్భుతం — మీరు మీ ప్రస్తుత అభ్యాస మార్గాన్ని పూర్తి చేశారు।', minutes: minutes => `${minutes} నిమిషాలు`, completeLabel: 'చాలా బాగుంది' },
+  Tamil: { ready: minutes => `உங்களுக்காக ${minutes} நிமிட சிறிய பயிற்சி தயாராக உள்ளது.`, complete: 'அருமை — உங்கள் தற்போதைய கற்றல் பாதையை முடித்துவிட்டீர்கள்.', minutes: minutes => `${minutes} நிமிடம்`, completeLabel: 'அருமை' },
+  Kannada: { ready: minutes => `ನಿಮಗಾಗಿ ${minutes} ನಿಮಿಷಗಳ ಸಣ್ಣ ಅಭ್ಯಾಸ ಸಿದ್ಧವಾಗಿದೆ.`, complete: 'ಅದ್ಭುತ — ನೀವು ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಕಲಿಕೆಯ ಪಥವನ್ನು ಪೂರ್ಣಗೊಳಿಸಿದ್ದೀರಿ.', minutes: minutes => `${minutes} ನಿಮಿಷ`, completeLabel: 'ಚೆನ್ನಾಗಿದೆ' }
+};
+
+function renderJourneyStatus(path) {
+  const copy = journeyStatusCopy[currentRecommendationLanguage()] || journeyStatusCopy.English;
+  const nextLesson = path && path.next_lesson;
+  if ($('#journeyNextLesson')) $('#journeyNextLesson').textContent = nextLesson ? nextLesson.title : '✓';
+  if ($('#journeyProgressText')) $('#journeyProgressText').textContent = nextLesson ? copy.ready(nextLesson.estimated_minutes) : copy.complete;
+  if ($('#journeyMinutes')) $('#journeyMinutes').textContent = nextLesson ? copy.minutes(nextLesson.estimated_minutes) : copy.completeLabel;
 }
 
 function updateInterfaceLanguage(language) {
@@ -1244,6 +1299,7 @@ function updateInterfaceLanguage(language) {
     if (copy[key]) element.textContent = copy[key];
   });
   if ($('#interfaceLangSelect')) $('#interfaceLangSelect').value = language;
+  if ($('#interfaceLangChoice')) $('#interfaceLangChoice').textContent = ({ English: '🌐 English', Hindi: '🌐 हिन्दी', Telugu: '🌐 తెలుగు', Tamil: '🌐 தமிழ்', Kannada: '🌐 ಕನ್ನಡ' })[language] || '🌐 English';
   localStorage.setItem('akshara_interface_language', language);
   if (currentLearner) {
     const learningLanguage = currentLearner.language || 'English';
@@ -1251,6 +1307,10 @@ function updateInterfaceLanguage(language) {
     renderFlashcards(learningLanguage);
   }
   renderLocalizedRecommendation(language);
+  if (window.currentLearningPath) renderJourneyStatus(window.currentLearningPath);
+  // Repaint on the next frame too. This keeps the card in sync in installed PWAs
+  // where the language selector can update before dashboard data finishes loading.
+  window.requestAnimationFrame(() => renderLocalizedRecommendation(language));
 }
 
 if ($('#interfaceLangSelect')) {
@@ -1259,6 +1319,34 @@ if ($('#interfaceLangSelect')) {
     updateInterfaceLanguage(event.target.value);
   });
   updateInterfaceLanguage(localStorage.getItem('akshara_interface_language') || 'English');
+}
+
+function closeInterfaceLanguageMenu() {
+  const menu = $('#interfaceLangMenu');
+  const trigger = $('#interfaceLangTrigger');
+  if (menu) menu.classList.add('hidden');
+  if (trigger) trigger.setAttribute('aria-expanded', 'false');
+}
+
+if ($('#interfaceLangTrigger')) {
+  $('#interfaceLangTrigger').addEventListener('click', () => {
+    const menu = $('#interfaceLangMenu');
+    const isOpen = menu && !menu.classList.contains('hidden');
+    if (isOpen) closeInterfaceLanguageMenu();
+    else {
+      menu.classList.remove('hidden');
+      $('#interfaceLangTrigger').setAttribute('aria-expanded', 'true');
+    }
+  });
+  document.querySelectorAll('[data-interface-language]').forEach(option => option.addEventListener('click', () => {
+    const language = option.dataset.interfaceLanguage;
+    if ($('#interfaceLangSelect')) $('#interfaceLangSelect').value = language;
+    updateInterfaceLanguage(language);
+    closeInterfaceLanguageMenu();
+  }));
+  document.addEventListener('click', event => {
+    if (!event.target.closest('.interface-language-picker')) closeInterfaceLanguageMenu();
+  });
 }
 
 // ----------------------------------------------------
@@ -1323,18 +1411,19 @@ async function filterAndRenderCourses(language) {
     const latest = recommendationData.recommendations && recommendationData.recommendations[0];
     activeAdaptiveRecommendation = learningPathData.adaptive || null;
     const recommendation = activeAdaptiveRecommendation ? activeAdaptiveRecommendation.message : (learningPathData.path ? learningPathData.path.message : latest && latest.content);
-    if ($('#recommendationCard')) $('#recommendationCard').classList.toggle('hidden', !recommendation);
+    if ($('#recommendationCard')) {
+      $('#recommendationCard').classList.toggle('hidden', !recommendation);
+      $('#recommendationCard').dataset.prioritySkill = activeAdaptiveRecommendation ? activeAdaptiveRecommendation.priority_skill : '';
+      $('#recommendationCard').dataset.fallbackMessage = recommendation || '';
+    }
     if (recommendation && $('#recommendationText')) {
       $('#recommendationText').textContent = recommendation;
-      renderLocalizedRecommendation(localStorage.getItem('akshara_interface_language') || 'English');
+      renderLocalizedRecommendation();
     }
     const path = learningPathData.path;
     if (path) {
-      if ($('#journeyNextLesson')) $('#journeyNextLesson').textContent = path.next_lesson ? path.next_lesson.title : 'Learning path complete!';
-      if ($('#journeyProgressText')) $('#journeyProgressText').textContent = path.next_lesson
-        ? `A short ${path.next_lesson.estimated_minutes}-minute practice is ready for you.`
-        : 'Wonderful work — you have completed your current learning path.';
-      if ($('#journeyMinutes')) $('#journeyMinutes').textContent = path.next_lesson ? `${path.next_lesson.estimated_minutes} min` : 'Great work';
+      window.currentLearningPath = path;
+      renderJourneyStatus(path);
       if ($('#journeyProgressFill')) $('#journeyProgressFill').style.width = `${path.progress_percent || 0}%`;
       if ($('#rptLessons')) $('#rptLessons').textContent = `${path.completed_lessons}/${path.total_lessons}`;
     }
@@ -1686,7 +1775,7 @@ document.querySelectorAll('[data-recommendation-feedback]').forEach(button => bu
     await api('/api/v1/recommendations/feedback', { method: 'POST', body: JSON.stringify({ helpful: button.dataset.recommendationFeedback === 'true' }) });
     const feedback = button.parentElement;
     if (feedback) {
-      const language = localStorage.getItem('akshara_interface_language') || 'English';
+      const language = currentRecommendationLanguage();
       feedback.textContent = (recommendationInterfaceCopy[language] || recommendationInterfaceCopy.English).thanks;
     }
   } catch (error) {}
@@ -2480,19 +2569,24 @@ async function fetchAndShowProfile() {
       showProfile(res.learner);
       return;
     }
-  } catch (err) {}
-  if (currentLearner) showProfile(currentLearner);
+  } catch (err) {
+    // Do not show account data stored in the browser after a session expires.
+    await logout();
+  }
 }
 
 async function fetchAndShowDashboard() {
   try {
     const res = await api('/api/learners/me');
     if (res && res.learner) {
-      showDashboard(res.learner);
+      if (res.learner.assessmentCompleted) showDashboard(res.learner);
+      else startAssessment(res.learner);
       return;
     }
-  } catch (err) {}
-  if (currentLearner) showDashboard(currentLearner);
+  } catch (err) {
+    // Dashboard access relies on the secure Flask session, not old browser data.
+    await logout();
+  }
 }
 
 if ($('#retakeAssessment')) {
