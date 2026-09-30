@@ -1112,7 +1112,7 @@ async function updateLanguage(newLang, saveToDb = true) {
   filterAndRenderCourses(newLang);
 
   if ($('#certLang')) $('#certLang').textContent = newLang;
-  if ($('#aiCoachHintText')) $('#aiCoachHintText').textContent = `Now learning in ${newLang}! Ask me for hints or practice tips anytime as you work through lessons.`;
+  if (window.aiCoachReady) renderAiCoachLanguage();
 
   // Show Toast Notification
   const toast = document.createElement('div');
@@ -1343,6 +1343,7 @@ function updateInterfaceLanguage(language) {
   }
   renderLocalizedRecommendation(language);
   if (window.currentLearningPath) renderJourneyStatus(window.currentLearningPath);
+  if (window.aiCoachReady) renderAiCoachLanguage();
   // Repaint on the next frame too. This keeps the card in sync in installed PWAs
   // where the language selector can update before dashboard data finishes loading.
   window.requestAnimationFrame(() => renderLocalizedRecommendation(language));
@@ -2500,16 +2501,77 @@ function renderAchievements(achievements) {
 }
 
 // ----------------------------------------------------
-// AI TUTOR ASSISTANT DRAWER & HINT SYSTEM
+// AI TUTOR ASSISTANT: A focused, low-pressure literacy guide.
 // ----------------------------------------------------
+const aiCoachCopy = {
+  English: { title: '🤖 Akshara AI Coach', subtitle: 'Your interactive literacy assistant', welcome: language => `Welcome! I can help you practise ${language}, one small step at a time.`, placeholder: 'Ask about a word, lesson, or pronunciation', tipLabel: 'Practice tip', wordLabel: 'Help with a word', voiceLabel: 'Pronunciation', lessonLabel: 'Next lesson', tip: 'Read one familiar word aloud three times. Listen carefully to each sound, then say it slowly and clearly.', word: 'Choose a word from today’s lesson. Look at its first letter, listen to it, then say the complete word.', voice: 'Open Voice Practice, listen to the phrase once, then repeat it slowly. Clear sounds matter more than speed.', lesson: 'Your next lesson is ready. Start with the picture or letter activity and use Next whenever you feel ready.', default: 'I can help with words, reading, writing, pronunciation, or choosing your next activity. Try one of the buttons below.', openVoice: 'Open voice practice', openLesson: 'Open learning path' },
+  Hindi: { title: '🤖 अक्षरा एआई कोच', subtitle: 'आपका संवादात्मक साक्षरता सहायक', welcome: language => `स्वागत है! मैं आपको ${language} का अभ्यास एक-एक छोटे कदम में करने में मदद कर सकता हूँ।`, placeholder: 'शब्द, पाठ या उच्चारण के बारे में पूछें', tipLabel: 'अभ्यास सुझाव', wordLabel: 'शब्द सहायता', voiceLabel: 'उच्चारण', lessonLabel: 'अगला पाठ', tip: 'एक परिचित शब्द को तीन बार ज़ोर से पढ़ें। हर ध्वनि को सुनें, फिर धीरे और साफ़ बोलें।', word: 'आज के पाठ से एक शब्द चुनें। उसका पहला अक्षर देखें, उसे सुनें और पूरा शब्द बोलें।', voice: 'वॉइस अभ्यास खोलें, वाक्यांश को एक बार सुनें और फिर धीरे से दोहराएं। गति से अधिक स्पष्ट ध्वनि ज़रूरी है।', lesson: 'आपका अगला पाठ तैयार है। चित्र या अक्षर गतिविधि से शुरू करें और तैयार होने पर आगे बढ़ें।', default: 'मैं शब्दों, पढ़ने, लिखने, उच्चारण या अगली गतिविधि चुनने में मदद कर सकता हूँ। नीचे दिया गया विकल्प चुनें।', openVoice: 'वॉइस अभ्यास खोलें', openLesson: 'सीखने का पथ खोलें' },
+  Telugu: { title: '🤖 అక్షర ఏఐ కోచ్', subtitle: 'మీ ఇంటరాక్టివ్ అక్షరాస్యత సహాయకుడు', welcome: language => `స్వాగతం! ${language}ను ఒక్కో చిన్న అడుగుతో అభ్యసించడంలో నేను సహాయం చేస్తాను।`, placeholder: 'పదం, పాఠం లేదా ఉచ్చారణ గురించి అడగండి', tipLabel: 'అభ్యాస చిట్కా', wordLabel: 'పద సహాయం', voiceLabel: 'ఉచ్చారణ', lessonLabel: 'తదుపరి పాఠం', tip: 'తెలిసిన ఒక పదాన్ని మూడు సార్లు గట్టిగా చదవండి. ప్రతి ధ్వనిని విని, నెమ్మదిగా స్పష్టంగా పలకండి।', word: 'నేటి పాఠం నుండి ఒక పదం ఎంచుకోండి. మొదటి అక్షరాన్ని చూడండి, వినండి, తర్వాత పూర్తి పదాన్ని పలకండి।', voice: 'వాయిస్ అభ్యాసం తెరిచి పదబంధాన్ని ఒకసారి విని, నెమ్మదిగా పునరావృతం చేయండి. వేగం కంటే స్పష్టత ముఖ్యం।', lesson: 'మీ తదుపరి పాఠం సిద్ధంగా ఉంది. చిత్రం లేదా అక్షరాల కార్యకలాపంతో ప్రారంభించి, సిద్ధమైనప్పుడు తదుపరికి వెళ్లండి।', default: 'పదాలు, చదవడం, రాయడం, ఉచ్చారణ లేదా తదుపరి కార్యకలాపం ఎంచుకోవడంలో నేను సహాయం చేయగలను. దిగువ ఎంపికను ప్రయత్నించండి।', openVoice: 'వాయిస్ అభ్యాసం తెరవండి', openLesson: 'అభ్యాస మార్గం తెరవండి' },
+  Tamil: { title: '🤖 அக்ஷரா ஏஐ பயிற்சியாளர்', subtitle: 'உங்கள் ஊடாடும் எழுத்தறிவு உதவியாளர்', welcome: language => `வரவேற்கிறோம்! ${language} பயிற்சியை ஒரு சிறிய படியாக நான் உதவ முடியும்.`, placeholder: 'சொல், பாடம் அல்லது உச்சரிப்பு பற்றி கேளுங்கள்', tipLabel: 'பயிற்சி குறிப்பு', wordLabel: 'சொல் உதவி', voiceLabel: 'உச்சரிப்பு', lessonLabel: 'அடுத்த பாடம்', tip: 'பரிச்சயமான ஒரு சொல்லை மூன்று முறை உரக்கப் படியுங்கள். ஒவ்வொரு ஒலியையும் கேட்டு, பின்னர் மெதுவாகத் தெளிவாகச் சொல்லுங்கள்.', word: 'இன்றைய பாடத்திலிருந்து ஒரு சொல்லைத் தேர்ந்தெடுக்கவும். அதன் முதல் எழுத்தைப் பாருங்கள், கேளுங்கள், பின்னர் முழுச் சொல்லையும் சொல்லுங்கள்.', voice: 'குரல் பயிற்சியைத் திறந்து சொற்றொடரை ஒருமுறை கேளுங்கள்; பின்னர் மெதுவாக மீண்டும் சொல்லுங்கள். வேகத்தை விடத் தெளிவு முக்கியம்.', lesson: 'உங்கள் அடுத்த பாடம் தயாராக உள்ளது. படம் அல்லது எழுத்துச் செயல்பாட்டில் தொடங்கி, தயாரானபோது அடுத்ததற்குச் செல்லுங்கள்.', default: 'சொற்கள், வாசித்தல், எழுதுதல், உச்சரிப்பு அல்லது அடுத்த செயல்பாட்டைத் தேர்வதில் நான் உதவ முடியும். கீழே உள்ள தேர்வை முயற்சிக்கவும்.', openVoice: 'குரல் பயிற்சியைத் திறக்கவும்', openLesson: 'கற்றல் பாதையைத் திறக்கவும்' },
+  Kannada: { title: '🤖 ಅಕ್ಷರ ಎಐ ಕೋಚ್', subtitle: 'ನಿಮ್ಮ ಸಂವಾದಾತ್ಮಕ ಸಾಕ್ಷರತಾ ಸಹಾಯಕ', welcome: language => `ಸ್ವಾಗತ! ${language} ಅಭ್ಯಾಸವನ್ನು ಒಂದೊಂದು ಸಣ್ಣ ಹೆಜ್ಜೆಯಲ್ಲಿ ಮಾಡಲು ನಾನು ಸಹಾಯ ಮಾಡುತ್ತೇನೆ.`, placeholder: 'ಪದ, ಪಾಠ ಅಥವಾ ಉಚ್ಚಾರಣೆಯ ಬಗ್ಗೆ ಕೇಳಿ', tipLabel: 'ಅಭ್ಯಾಸ ಸಲಹೆ', wordLabel: 'ಪದ ಸಹಾಯ', voiceLabel: 'ಉಚ್ಚಾರಣೆ', lessonLabel: 'ಮುಂದಿನ ಪಾಠ', tip: 'ಪರಿಚಿತ ಪದವನ್ನು ಮೂರು ಬಾರಿ ಜೋರಾಗಿ ಓದಿ. ಪ್ರತಿಯೊಂದು ಧ್ವನಿಯನ್ನು ಆಲಿಸಿ, ನಂತರ ನಿಧಾನವಾಗಿ ಸ್ಪಷ್ಟವಾಗಿ ಹೇಳಿ.', word: 'ಇಂದಿನ ಪಾಠದಿಂದ ಒಂದು ಪದ ಆಯ್ಕೆಮಾಡಿ. ಅದರ ಮೊದಲ ಅಕ್ಷರವನ್ನು ನೋಡಿ, ಆಲಿಸಿ, ನಂತರ ಪೂರ್ಣ ಪದವನ್ನು ಹೇಳಿ.', voice: 'ಧ್ವನಿ ಅಭ್ಯಾಸವನ್ನು ತೆರೆಯಿರಿ, ವಾಕ್ಯಾಂಶವನ್ನು ಒಮ್ಮೆ ಆಲಿಸಿ, ನಂತರ ನಿಧಾನವಾಗಿ ಪುನರಾವರ್ತಿಸಿ. ವೇಗಕ್ಕಿಂತ ಸ್ಪಷ್ಟತೆ ಮುಖ್ಯ.', lesson: 'ನಿಮ್ಮ ಮುಂದಿನ ಪಾಠ ಸಿದ್ಧವಾಗಿದೆ. ಚಿತ್ರ ಅಥವಾ ಅಕ್ಷರ ಚಟುವಟಿಕೆಯಿಂದ ಪ್ರಾರಂಭಿಸಿ, ಸಿದ್ಧರಾದಾಗ ಮುಂದುವರಿಯಿರಿ.', default: 'ಪದಗಳು, ಓದುವಿಕೆ, ಬರವಣಿಗೆ, ಉಚ್ಚಾರಣೆ ಅಥವಾ ಮುಂದಿನ ಚಟುವಟಿಕೆಯನ್ನು ಆಯ್ಕೆಮಾಡಲು ನಾನು ಸಹಾಯ ಮಾಡುತ್ತೇನೆ. ಕೆಳಗಿನ ಆಯ್ಕೆಯನ್ನು ಪ್ರಯತ್ನಿಸಿ.', openVoice: 'ಧ್ವನಿ ಅಭ್ಯಾಸ ತೆರೆಯಿರಿ', openLesson: 'ಕಲಿಕೆಯ ಪಥ ತೆರೆಯಿರಿ' }
+};
+
+function aiCoachLanguage() {
+  const language = ($('#interfaceLangSelect') && $('#interfaceLangSelect').value) || localStorage.getItem('akshara_interface_language') || 'English';
+  return aiCoachCopy[language] ? language : 'English';
+}
+
+function aiCoachContext() { return aiCoachCopy[aiCoachLanguage()] || aiCoachCopy.English; }
+
+function appendAiCoachMessage(role, message, action) {
+  const messages = $('#aiCoachMessages');
+  if (!messages) return;
+  const article = document.createElement('article');
+  article.className = `ai-coach-message ${role}`;
+  const icon = document.createElement('span');
+  icon.textContent = role === 'user' ? '👤' : '🤖';
+  const content = document.createElement('div');
+  const paragraph = document.createElement('p');
+  paragraph.textContent = message;
+  content.appendChild(paragraph);
+  if (action) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'coach-message-action'; button.textContent = action.label;
+    button.addEventListener('click', () => { showDashboardPage(action.page); $('#aiCoachDrawer').classList.add('hidden'); });
+    content.appendChild(button);
+  }
+  article.append(icon, content);
+  messages.appendChild(article);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function coachResponse(intent, userMessage = '') {
+  const copy = aiCoachContext();
+  const text = userMessage.toLowerCase();
+  const selectedIntent = intent || (/(voice|speak|pronounce|audio)/.test(text) ? 'voice' : /(lesson|learn|path|next)/.test(text) ? 'lesson' : /(word|letter|meaning|read|write)/.test(text) ? 'word' : /(tip|help|practice)/.test(text) ? 'tip' : 'default');
+  if (selectedIntent === 'voice') return { text: copy.voice, action: { label: copy.openVoice, page: 'page-voice' } };
+  if (selectedIntent === 'lesson') return { text: copy.lesson, action: { label: copy.openLesson, page: 'page-lessons' } };
+  return { text: copy[selectedIntent] || copy.default };
+}
+
+function renderAiCoachLanguage() {
+  const copy = aiCoachContext();
+  if ($('#aiCoachTitle')) $('#aiCoachTitle').textContent = copy.title;
+  if ($('#aiCoachSubtitle')) $('#aiCoachSubtitle').textContent = copy.subtitle;
+  if ($('#coachTipLabel')) $('#coachTipLabel').textContent = copy.tipLabel;
+  if ($('#coachWordLabel')) $('#coachWordLabel').textContent = copy.wordLabel;
+  if ($('#coachVoiceLabel')) $('#coachVoiceLabel').textContent = copy.voiceLabel;
+  if ($('#coachLessonLabel')) $('#coachLessonLabel').textContent = copy.lessonLabel;
+  if ($('#aiCoachInput')) $('#aiCoachInput').placeholder = copy.placeholder;
+  const messages = $('#aiCoachMessages');
+  if (messages && messages.children.length === 1 && $('#aiCoachHintText')) $('#aiCoachHintText').textContent = copy.welcome((currentLearner && currentLearner.language) || 'your language');
+}
+
+window.aiCoachReady = true;
+renderAiCoachLanguage();
+
 function openAiCoachHint(customHint) {
   const drawer = $('#aiCoachDrawer');
-  const text = $('#aiCoachHintText');
-  if (drawer && text) {
-    text.textContent = customHint || `Keep practicing reading and speaking daily in ${currentLearner ? currentLearner.language : 'your language'}! Small steps lead to fluency.`;
-    drawer.classList.remove('hidden');
-    playSound('badge');
-  }
+  if (!drawer) return;
+  drawer.classList.remove('hidden');
+  renderAiCoachLanguage();
+  if (customHint) appendAiCoachMessage('bot', customHint);
+  playSound('badge');
 }
 
 if ($('#toggleAiCoachBtn')) {
@@ -2524,6 +2586,20 @@ if ($('#closeAiCoachBtn')) {
     if ($('#aiCoachDrawer')) $('#aiCoachDrawer').classList.add('hidden');
   });
 }
+if ($('#aiCoachForm')) $('#aiCoachForm').addEventListener('submit', event => {
+  event.preventDefault();
+  const input = $('#aiCoachInput');
+  const message = input.value.trim();
+  if (!message) return;
+  appendAiCoachMessage('user', message);
+  const response = coachResponse(null, message);
+  window.setTimeout(() => appendAiCoachMessage('bot', response.text, response.action), 180);
+  input.value = '';
+});
+document.querySelectorAll('[data-coach-intent]').forEach(button => button.addEventListener('click', () => {
+  const response = coachResponse(button.dataset.coachIntent);
+  appendAiCoachMessage('bot', response.text, response.action);
+}));
 
 // ----------------------------------------------------
 // CERTIFICATE GENERATOR MODAL

@@ -565,17 +565,25 @@
       <div id="aiCoachDrawer" class="ai-coach-drawer hidden">
         <div class="ai-coach-header">
           <div>
-            <h4>🤖 Akshara AI Coach</h4>
-            <p>Your interactive literacy assistant</p>
+            <h4 id="aiCoachTitle">🤖 Akshara AI Coach</h4>
+            <p id="aiCoachSubtitle">Your interactive literacy assistant</p>
           </div>
           <button id="closeAiCoachBtn" class="social-modal-close" type="button">&times;</button>
         </div>
         <div class="ai-coach-body">
-          <p id="aiCoachHintText" class="ai-hint-box">Welcome! Ask me for hints or practice tips anytime as you work through lessons.</p>
-          <div class="ai-coach-quick-actions">
-            <button type="button" class="btn-executive" onclick="openAiCoachHint('💡 Tip: Practice reading short words out loud to build speech muscle memory.')">💡 Get Practice Tip</button>
-            <button type="button" class="btn-executive" onclick="openAiCoachHint('📖 Hint: Pay attention to vowel sounds in regional languages!')">📖 Grammar Insight</button>
+          <div id="aiCoachMessages" class="ai-coach-messages" role="log" aria-live="polite">
+            <article class="ai-coach-message bot"><span aria-hidden="true">🤖</span><p id="aiCoachHintText">Welcome! Ask me for hints or practice tips anytime as you work through lessons.</p></article>
           </div>
+          <div class="ai-coach-quick-actions">
+            <button type="button" class="coach-chip" data-coach-intent="tip">💡 <span id="coachTipLabel">Practice tip</span></button>
+            <button type="button" class="coach-chip" data-coach-intent="word">🔤 <span id="coachWordLabel">Help with a word</span></button>
+            <button type="button" class="coach-chip" data-coach-intent="voice">🎙️ <span id="coachVoiceLabel">Pronunciation</span></button>
+            <button type="button" class="coach-chip" data-coach-intent="lesson">🧭 <span id="coachLessonLabel">Next lesson</span></button>
+          </div>
+          <form id="aiCoachForm" class="ai-coach-form">
+            <input id="aiCoachInput" type="text" maxlength="240" autocomplete="off" placeholder="Ask about a word, lesson, or pronunciation" aria-label="Ask Akshara AI Coach" />
+            <button type="submit" aria-label="Send message">➜</button>
+          </form>
         </div>
       </div>
 
